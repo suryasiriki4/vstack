@@ -11,6 +11,23 @@ import googlesearch
 from html2text import html2text
 import random
 
+import random
+#import sumy
+import transformers
+
+import torch
+import json
+
+from utils import ANSWERS_URL, QUESTIONS_URL
+from utils import Question, Answer
+from storage import QUESTIONS, ANSWERS, QUSTION_IDS
+
+
+from transformers import T5Tokenizer, T5Config, T5ForConditionalGeneration
+"""from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lex_rank import LexRankSummarizer"""
+
 
 USER_AGENTS = [
     "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
@@ -45,6 +62,31 @@ USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko',
     'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)',
 ]
+
+
+
+def souper(url):
+    """ getting the beautifulSoup object from url """
+
+    try:
+        html = requests.get(url, headers={"User-Agent": random.choice(USER_AGENTS)})
+    except requests.exceptions.RequestException:
+        print("unable to fetch stack overflow results")
+        sys.exit(1)
+
+    print(html.url)
+
+    if re.search("\.com/nocaptcha", html.url): # checking if URL is captcha page
+        return None
+    else:
+        return BeautifulSoup(html.text, "html.parser")
+
+def get_search_results(soup):
+    """ return a list of directories of containg serach resluts """
+    search_results = []
+
+    for result in soup.find_all("div", class_="question-summary search-result"):
+        search_results.append(result)
 
 
 
@@ -102,6 +144,42 @@ def store_questions(question_ids):
 
 
     return questions
+  
+  
+  
+def print_results(QUSTION_IDS, QUESTIONS, ANSWERS):
+
+    num_of_results = len(QUSTION_IDS)
+
+
+
+    
+    for i in range(num_of_results):
+        answer = ANSWERS[i].body
+        parser = PlaintextParser.from_string(answer,Tokenizer("english"))
+    
+        summarizer = LexRankSummarizer()
+        summary = summarizer(parser.document,10);
+        
+
+
+        print(' ')
+        print("#####################################################################################################")
+        print(' ')
+        print('Question: ')
+        print(' ')
+        print(QUESTIONS[i].body)
+        print(' ')
+        print("-----------------------------------------------------------------------------------------------------")
+        print(' ')
+        print("Author: " + ANSWERS[i].author)
+        print(' ')
+        print(' ')
+        print("Answer: ")
+        for sentence in summary :
+            print(sentence)
+        
+    return
 
 
 def main():
