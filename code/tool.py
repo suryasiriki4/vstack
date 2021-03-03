@@ -143,3 +143,22 @@ def store_questions(question_ids):
 
 
     return questions
+
+
+
+def main():
+
+    query = input("please enter your query : ")
+
+    questions_urls = get_questions_urls(query)  # getting all the urls of the questions related to the query.
+
+    QUSTION_IDS = get_question_ids(questions_urls)  # getting question ids from the url.
+
+    QUESTIONS = store_questions(QUSTION_IDS)  # storing questions all the top questions with ids in a list
+
+
+    ANSWERS = get_answers_to_questions(QUSTION_IDS) # getting top most answers to the question with the given ids.
+
+    
+
+    print_results(QUSTION_IDS, QUESTIONS, ANSWERS)  # printing all the resutled questions with answers
