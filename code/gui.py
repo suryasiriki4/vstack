@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
 import sys
 from tool import fun
 
@@ -24,7 +25,8 @@ def search():
     return answersStore
 
 
-def enter_pressed(event):
+def enter_pressed(event):  
+
     answersStore = search()
     global ques
     ques = [answer[0] for answer in answersStore]
@@ -32,6 +34,9 @@ def enter_pressed(event):
     answers = [answer[2] for answer in answersStore]
     
     populate_list(ques, parts_list)
+
+       
+
 
 
 # table of questions part
@@ -55,7 +60,7 @@ def view(root, selected_tuple, ques, answers):
 
 root = Tk()
 root.title("TOOL")
-root.geometry("320x550")
+root.geometry("340x550")
 root.configure(bg="white")
 
 ent = StringVar()
@@ -69,27 +74,25 @@ search_label = Label(root, text="Searching : ", font=("arial", 12, "bold"))
 search_label.place(x=25, y=70)
 
 
-search_button = Button(root, text="Search", width=6, font=(
+search_button = Button(root, text="Search", width=8, font=(
     "arial", 12, "bold"), command=search)
-search_button.place(x=15, y=100)
+search_button.place(x=20, y=100)
 
-view_button = Button(root, text="view", width=6, font=(
+view_button = Button(root, text="view", width=8, font=(
     "arial", 12, "bold"), command=lambda: view(root, parts_list.curselection(), ques, answers))
-view_button.place(x=115, y=100)
+view_button.place(x=125, y=100)
 
-exit_button = Button(root, text="Exit", width=6, font=(
+exit_button = Button(root, text="Exit", width=8, font=(
     "arial", 12, "bold"), command=root.quit)
-exit_button.place(x=215, y=100)
+exit_button.place(x=230, y=100)
 
 
 
-parts_list = Listbox(root, height=10, width=140)
-parts_list.place(x=15, y=150, height=100, width=300)
-
-
+parts_list = Listbox(root, height=4)
+parts_list.place(x=15, y=150, height=100, width=320)
 
 
 text = ScrolledText(root, font=("times", 10), bd=4, relief=SUNKEN, wrap=WORD)
-text.place(x=15, y=250, height=300, width=300)
+text.place(x=15, y=250, height=300, width=320)
 
 root.mainloop()
