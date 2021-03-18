@@ -12,10 +12,9 @@ from html2text import html2text
 import random
 
 import random
-#import sumy
-import transformers
+import sumy
 
-import torch
+
 import json
 
 from utils import ANSWERS_URL, QUESTIONS_URL
@@ -23,10 +22,9 @@ from utils import Question, Answer
 from storage import QUESTIONS, ANSWERS, QUSTION_IDS
 
 
-from transformers import T5Tokenizer, T5Config, T5ForConditionalGeneration
-"""from sumy.parsers.plaintext import PlaintextParser
+from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lex_rank import LexRankSummarizer"""
+from sumy.summarizers.lex_rank import LexRankSummarizer
 
 
 USER_AGENTS = [
@@ -64,22 +62,23 @@ USER_AGENTS = [
 ]
 
 
-
 def souper(url):
     """ getting the beautifulSoup object from url """
 
     try:
-        html = requests.get(url, headers={"User-Agent": random.choice(USER_AGENTS)})
+        html = requests.get(
+            url, headers={"User-Agent": random.choice(USER_AGENTS)})
     except requests.exceptions.RequestException:
         print("unable to fetch stack overflow results")
         sys.exit(1)
 
     print(html.url)
 
-    if re.search("\.com/nocaptcha", html.url): # checking if URL is captcha page
+    if re.search("\.com/nocaptcha", html.url):  # checking if URL is captcha page
         return None
     else:
         return BeautifulSoup(html.text, "html.parser")
+
 
 def get_search_results(soup):
     """ return a list of directories of containg serach resluts """
@@ -88,6 +87,29 @@ def get_search_results(soup):
     for result in soup.find_all("div", class_="question-summary search-result"):
         search_results.append(result)
 
+
+def get_questions_urls(query):
+    """ wrapper function for get_search_results"""
+
+    search_text = query + " site:stackoverflow.com"
+
+    questions_urls = list(googlesearch.search(search_text))[:4]
+
+    return questions_urls
+
+
+def get_question_ids(questions_urls):
+    # taking only the question ids from the urls using regular expresssions
+    # parse questions id from each url path
+    # re.findall will return something like '/666/' so the
+    # [1:-1] slicing can remove these slashes
+    question_ids = []
+
+    for q in questions_urls:
+        if re.findall(r"/\d+/", q) != []:
+            question_ids.append(re.findall(r"/\d+/", q)[0][1:-1])
+
+    return question_ids
 
 
 def get_answers_to_questions(question_ids):
@@ -116,8 +138,9 @@ def get_answers_to_questions(question_ids):
                 score=most_voted_answer["score"],
                 body=markdown_answer_body,
                 author=most_voted_answer["owner"]["display_name"],
-                profile_image=most_voted_answer["owner"].get("profile_image", None),
-        ))
+                profile_image=most_voted_answer["owner"].get(
+                    "profile_image", None),
+            ))
 
     return answers
 
@@ -139,62 +162,50 @@ def store_questions(question_ids):
 
         markdown_question_body = html2text(question_body)
 
-        questions.append(Question(id=question_id, has_accepted=None, body=markdown_question_body))
+        # storing in database
 
-
+        questions.append(
+            Question(id=question_id, has_accepted=None, body=markdown_question_body))
 
     return questions
-  
-  
-  
+
+
 def print_results(QUSTION_IDS, QUESTIONS, ANSWERS):
 
     num_of_results = len(QUSTION_IDS)
+    answers = []
 
-
-
-    
     for i in range(num_of_results):
+        answers_temp = []
         answer = ANSWERS[i].body
-        parser = PlaintextParser.from_string(answer,Tokenizer("english"))
-    
+        parser = PlaintextParser.from_string(answer, Tokenizer("english"))
+
         summarizer = LexRankSummarizer()
-        summary = summarizer(parser.document,10);
-        
+        summary = summarizer(parser.document, 10)
+        answers_temp.append(QUESTIONS[i].body)
+        answers_temp.append(ANSWERS[i].author)
+        answerTemp = ""
+
+        answers_temp.append(answer)
+
+        answers.append(answers_temp)
+
+    return answers
 
 
-        print(' ')
-        print("#####################################################################################################")
-        print(' ')
-        print('Question: ')
-        print(' ')
-        print(QUESTIONS[i].body)
-        print(' ')
-        print("-----------------------------------------------------------------------------------------------------")
-        print(' ')
-        print("Author: " + ANSWERS[i].author)
-        print(' ')
-        print(' ')
-        print("Answer: ")
-        for sentence in summary :
-            print(sentence)
-        
-    return
-
-
-def main():
-
-    query = input("please enter your query : ")
-
-    questions_urls = get_questions_urls(query)  # getting all the urls of the questions related to the query.
-
-    QUSTION_IDS = get_question_ids(questions_urls)  # getting question ids from the url.
-
-    QUESTIONS = store_questions(QUSTION_IDS)  # storing questions all the top questions with ids in a list
-
-
-    ANSWERS = get_answers_to_questions(QUSTION_IDS) # getting top most answers to the question with the given ids.
-
-    
-
-    print_results(QUSTION_IDS, QUESTIONS, ANSWERS)  # printing all the resutled questions with answers
+def fun(query):
+    print("1\n")
+    # getting all the urls of the questions related to the query.
+    questions_urls = get_questions_urls(query)
+    print("1\n")
+    # getting question ids from the url.
+    QUSTION_IDS = get_question_ids(questions_urls)
+    print("1\n")
+    # storing questions all the top questions with ids in a list
+    QUESTIONS = store_questions(QUSTION_IDS)
+    print("1\n")
+    # getting top most answers to the question with the given ids.
+    ANSWERS = get_answers_to_questions(QUSTION_IDS)
+    print("1\n")
+    # printing all the resutled questions with answers
+    return print_results(QUSTION_IDS, QUESTIONS, ANSWERS)
