@@ -8,7 +8,7 @@ def search():
 
     search_data = ent.get()
 
-    answersStore = fun()
+    answersStore = fun(search_data)
     print("1\n")
     # delete current data
     ent.set(" ")
@@ -18,7 +18,7 @@ def search():
     # insert data
     search_label["text"] = " Searching :{}".format(search_data)
     print("1\n")
-    text.insert(0.0, answersStore[0][1])
+    text.insert(0.0, answersStore[0][0])
     print("1\n")
 
 
