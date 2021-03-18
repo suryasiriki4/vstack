@@ -1,5 +1,8 @@
 # team09_tool
 
+## ABOUT :
+A software tool which improves the human computer interaction by solving developers routine problem of swtiching to web browser for accessing stackoverflow to search for a query or question and directly give suggestions or even soultions for the error during compilation.
+
 ## packages to install:
 
 * python3 -m pip install googlesearch-python
