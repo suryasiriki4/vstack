@@ -103,7 +103,11 @@ def get_question_ids(questions_urls):
     # parse questions id from each url path
     # re.findall will return something like '/666/' so the
     # [1:-1] slicing can remove these slashes
-    question_ids = [re.findall(r"/\d+/", q)[0][1:-1] for q in questions_urls]
+    question_ids = []
+
+    for q in questions_urls:
+        if re.findall(r"/\d+/", q) != []:
+            question_ids.append(re.findall(r"/\d+/", q)[0][1:-1])
 
     return question_ids
 
@@ -182,18 +186,17 @@ def print_results(QUSTION_IDS, QUESTIONS, ANSWERS):
         answers_temp.append(ANSWERS[i].author)
         answerTemp = ""
 
-        for sentence in summary:
-            answerTemp += sentence
+        answers_temp.append(answer)
 
         answers.append(answers_temp)
 
     return answers
 
 
-def fun():
+def fun(query):
     print("1\n")
     # getting all the urls of the questions related to the query.
-    questions_urls = get_questions_urls("sorting")
+    questions_urls = get_questions_urls(query)
     print("1\n")
     # getting question ids from the url.
     QUSTION_IDS = get_question_ids(questions_urls)
