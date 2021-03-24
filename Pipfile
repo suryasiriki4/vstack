@@ -4,12 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-beautifulsoup4 = "*"
-numpy = "*"
-sumy = "*"
-html2text = "*"
-googlesearch-python = "*"
-flask = "*"
 
 [dev-packages]
 

@@ -194,18 +194,19 @@ def print_results(QUSTION_IDS, QUESTIONS, ANSWERS):
 
 
 def fun(query):
-    print("1\n")
-    # getting all the urls of the questions related to the query.
-    questions_urls = get_questions_urls(query)
-    print("1\n")
-    # getting question ids from the url.
-    QUSTION_IDS = get_question_ids(questions_urls)
-    print("1\n")
-    # storing questions all the top questions with ids in a list
-    QUESTIONS = store_questions(QUSTION_IDS)
-    print("1\n")
-    # getting top most answers to the question with the given ids.
-    ANSWERS = get_answers_to_questions(QUSTION_IDS)
-    print("1\n")
-    # printing all the resutled questions with answers
-    return print_results(QUSTION_IDS, QUESTIONS, ANSWERS)
+        print("1\n")
+        # getting all the urls of the questions related to the query.
+        questions_urls = get_questions_urls(query)
+        print("1\n")
+        # getting question ids from the url.
+        QUSTION_IDS = get_question_ids(questions_urls)
+        print("1\n")
+        # storing questions all the top questions with ids in a list
+        QUESTIONS = store_questions(QUSTION_IDS)
+        print("1\n")
+        # getting top most answers to the question with the given ids.
+        ANSWERS = get_answers_to_questions(QUSTION_IDS)
+        print("1\n")
+        # printing all the resutled questions with answers
+        return print_results(QUSTION_IDS, QUESTIONS, ANSWERS)
+
