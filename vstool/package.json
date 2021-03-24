@@ -11,8 +11,8 @@
 	],
 	"activationEvents": [
 		"onView:vstool-sidebar",
-		"onCommand:vstool.helloWorld",
-		"onCommand:vstool.askQuestion"
+		"onCommand:vstool.welcomeMessage",
+		"onCommand:vstool.addWindow"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -38,18 +38,16 @@
 		},
 		"commands": [
 			{
-				"command": "vstool.helloWorld",
-				"title": "Hello World"
-			},
-			{
-				"command": "vstool.refresh",
+				"command": "vstool.welcomeMessage",
 				"category": "VSTool",
-				"title": "Refresh"
+				"title": "Welcome"
 			},
 			{
-				"command": "vstool.askQuestion",
-				"title": "QuestionAsk"
+				"command": "vstool.addWindow",
+				"category": "VSTool",
+				"title": "WindowAdd"
 			}
+
 		]
 	},
 	"scripts": {

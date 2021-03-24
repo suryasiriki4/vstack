@@ -1,7 +1,14 @@
+
 <script>
+    import * as vscode from 'vscode';
+    import { WindowPanel } from ".../src/WindowPanel.ts";
     function callSearch(){
-        document.getElementById(Result).style.display = "box";
-        document.getElementById(Options).style.dispaly = "box";
+        context.subscriptions.push(
+		vscode.commands.registerCommand("vstool.addWindow",() => {
+			WindowPanel.createOrShow(context.extensionUri);
+
+		})
+	);
     }
 </script>
 <style>
