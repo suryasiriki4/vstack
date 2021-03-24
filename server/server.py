@@ -20,12 +20,17 @@ def worker():
 
     print("hello world")
 
+    # x = {
+    # "Questions": tool.fun(data["search"]),
+    # }
+
     x = {
-    "Questions": tool.fun(data["search"]),
+    "Questions": ["how you doing?", "how am i doint?", "how are they doing?", "do you love me?"],
     }
 
     # convert into JSON:
     y = json.dumps(x)
+   
 
     return y
 
