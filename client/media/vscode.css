@@ -44,7 +44,7 @@
     font-family: var(--vscode-editor-font-family);
   }
   
-  button {
+  .btn {
     border: none;
     padding: var(--input-padding-vertical) var(--input-padding-horizontal);
     width: 100%;
@@ -55,21 +55,21 @@
     background: var(--vscode-button-background);
   }
   
-  button:hover {
+  .btn:hover {
     cursor: pointer;
     background: var(--vscode-button-hoverBackground);
   }
   
-  button:focus {
+  .btn:focus {
     outline-color: var(--vscode-focusBorder);
   }
   
-  button.secondary {
+  .btn.secondary {
     color: var(--vscode-button-secondaryForeground);
     background: var(--vscode-button-secondaryBackground);
   }
   
-  button.secondary:hover {
+  .btn.secondary:hover {
     background: var(--vscode-button-secondaryHoverBackground);
   }
   
