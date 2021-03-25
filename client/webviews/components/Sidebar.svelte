@@ -11,14 +11,22 @@
         const question3 = document.getElementById("question3");
         const question4 = document.getElementById("question4");
 
+        const loaders = document.getElementsByClassName("loader");
+        const loader = loaders[0];
+
         var viewButtons = document.getElementsByClassName("viewButton");
 
         const fullQuestion = document.getElementById("fullQuestion");
         const fullAnswer = document.getElementById("fullAnswer");
 
+        const lines = document.getElementsByClassName("dotted");
+
+        const questionTitles = document.getElementsByTagName("h3");
+
+
         // cleaning the panel for the new results
 
-        question1.innerText = 'Loading';
+        question1.innerText = '';
         question2.innerText = '';
         question3.innerText = '';
         question4.innerText = '';
@@ -26,6 +34,15 @@
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "hidden"; 
         }
+
+        for (var i = 0; i < lines.length; ++i) {
+            lines[i].style.visibility = "hidden";
+        }
+        
+        questionTitles[0].style.visibility = "hidden";
+        questionTitles[1].style.visibility = "hidden";
+
+    
 
         fullQuestion.innerText = '';
         fullAnswer.innerText = '';
@@ -38,6 +55,8 @@
         "search" : document.getElementsByClassName('searchQuery')[0].value
         });
 
+        loader.style.visibility = "visible";
+
         const response = await fetch('http://0.0.0.0:5000/receiver', {
             method: 'POST',
             body: searchJson,
@@ -47,6 +66,8 @@
             },
         })
         .then(res => res.json());
+
+        loader.remove();
 
         var parsedJSON = response;
 
@@ -63,6 +84,10 @@
             viewButtons[i].style.visibility = "visible"; 
         }
 
+        for (var i = 0; i < lines.length; ++i) {
+            lines[i].style.visibility = "visible";
+        }
+
 
         document.getElementsByClassName('searchQuery')[0].value = '';
 
@@ -76,6 +101,12 @@
         const fullQuestion = document.getElementById("fullQuestion");
         const fullAnswer = document.getElementById("fullAnswer");
 
+        const questionTitles = document.getElementsByTagName("h3");
+        questionTitles[0].style.visibility = "visible";
+        questionTitles[1].style.visibility = "visible";
+
+        fullAnswer.style.visibility = "visible";
+
         fullQuestion.innerText = arrayOfQuestions[num_of_question-1][0];
         fullAnswer.innerText = arrayOfQuestions[num_of_question-1][2];
     }
@@ -88,13 +119,77 @@
     display: none;
   }
 
-  hr.dashed {
-    border-top: 1px dashed var(--vscode-foreground);
+  hr.dotted {
+    border-top: 0.5px dotted var(--vscode-foreground);
   }
 
-  hr.dotted {
-    border-top: 1px dotted var(--vscode-foreground);
-  }
+  .viewButton {
+    border-radius: 4px;
+    background-color: var(--vscode-button-background);
+    border: none;
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 12px;
+    padding: 5px;
+    width: 120px;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 0.1px;
+    }
+
+    .viewButton span {
+        cursor: pointer;
+        display: inline-block;
+        position: relative;
+        transition: 0.5s;
+    }
+
+    .viewButton span:after {
+    content: '\00bb';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+    }
+
+    .viewButton:hover span {
+    padding-right: 25px;
+    }
+
+    .viewButton:hover span:after {
+    opacity: 1;
+    right: 0;
+    }
+
+    .loader {
+    border: 5px solid var(--vscode-foreground); /* Light grey */
+    border-top: 5px solid var(--vscode-button-background); /* Blue */
+    border-bottom: 5px solid var(--vscode-button-background); /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    }
+
+    .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+    }
+
+    div#fullAnswer {
+        background-color: var(--vscode-foreground);
+        color: var(--vscode-editor-background);
+        height: 200px;
+        width: 300px;
+        overflow-y: scroll;
+    }
 </style>
 <input class="searchQuery"/>
 <div for="topQ" id = "Result">Top Search Results:</div>
@@ -105,27 +200,33 @@
 
     
 </select>
-<button on:click ={fetchFromServer}>
+<button class="btn" on:click ={fetchFromServer}>
     Search
 </button>
 
-<p id="question1">Loading...</p>
-<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(1)}>question 1</button>
-<hr class="dashed">
+<div class="loader-container">
+    <div class="loader" style="visibility:hidden"></div>
+</div>
+
+
+<p id="question1"></p>
+<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(1)}><span>Question 1</span></button>
+<hr class="dotted" style="visibility:hidden">
 <p id="question2"></p>
-<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(2)}>question 2</button>
-<hr class="dashed">
+<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(2)}><span>Question 2</span></button>
+<hr class="dotted" style="visibility:hidden">
 <p id="question3"></p>
-<button class="viewButton"  style="visibility:hidden" on:click={() => printFullQuestion(3)}>question 3</button>
-<hr class="dashed">
+<button class="viewButton"  style="visibility:hidden" on:click={() => printFullQuestion(3)}><span>Question 3</span></button>
+<hr class="dotted" style="visibility:hidden">
 <p id="question4"></p>
-<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(4)}>question 4</button>
-<hr class="dashed">
+<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(4)}><span>Question 4</span></button>
+<hr class="dotted" style="visibility:hidden">
 <br>
-<br>
-<h3>QUESTION:</h3>
+<h3 style="visibility:hidden">QUESTION:</h3>
 <p id="fullQuestion"></p>
-<hr class="dotted">
+<hr class="dotted" style="visibility:hidden">
 <br>
-<h3>ANSWER:</h3>
-<p id="fullAnswer"></p>
+<h3 style="visibility:hidden">ANSWER:</h3>
+<div style="visibility:hidden" id="fullAnswer">
+</div>
+
