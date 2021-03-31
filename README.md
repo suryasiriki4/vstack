@@ -7,6 +7,12 @@ A software tool which improves the human computer interaction by solving develop
 * A side panel for searching any query or issue in stackoverflow and getting the most relevant results.
 * Generating meaningful errors, by summarizing the error message and shortly summarized solution from stack overflow.
 
+## Images of Side Panel for accessing Stack Oveflow
+
+![Alt text](./images/img1.png?raw=true "Searching Query in Stackoverflow")
+
+![Alt text](./images/img2.png?raw=true "Loaded questions and answers")
+
 ## packages to install:
 
 * python3 -m pip install googlesearch-python

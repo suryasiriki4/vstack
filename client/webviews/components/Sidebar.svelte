@@ -12,7 +12,10 @@
         const question4 = document.getElementById("question4");
 
         const loaders = document.getElementsByClassName("loader");
-        const loader = loaders[0];
+        var loader = null;
+        if (loaders.length > 0 ) {
+            loader = loaders[0];
+        }
 
         var viewButtons = document.getElementsByClassName("viewButton");
 
@@ -47,6 +50,8 @@
         fullQuestion.innerText = '';
         fullAnswer.innerText = '';
 
+        fullAnswer.style.visibility = "hidden";
+
 
         console.log("button is clicked");
 
@@ -55,7 +60,9 @@
         "search" : document.getElementsByClassName('searchQuery')[0].value
         });
 
-        loader.style.visibility = "visible";
+        if (loader) {
+            loader.style.visibility = "visible";
+        }
 
         const response = await fetch('http://0.0.0.0:5000/receiver', {
             method: 'POST',
@@ -67,7 +74,9 @@
         })
         .then(res => res.json());
 
-        loader.remove();
+        if (loader) {
+            loader.remove();
+        }
 
         var parsedJSON = response;
 
@@ -75,10 +84,10 @@
 
         console.log(arrayOfQuestions);
 
-        question1.innerText = arrayOfQuestions[0][0].substr(0, 100);
-        question2.innerText = arrayOfQuestions[1][0].substr(0, 100);
-        question3.innerText = arrayOfQuestions[2][0].substr(0, 100);
-        question4.innerText = arrayOfQuestions[3][0].substr(0, 100);
+        question1.innerText = arrayOfQuestions[0][0].substr(0, 100) + "...";
+        question2.innerText = arrayOfQuestions[1][0].substr(0, 100) + "...";
+        question3.innerText = arrayOfQuestions[2][0].substr(0, 100) + "...";
+        question4.innerText = arrayOfQuestions[3][0].substr(0, 100) + "...";
 
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "visible"; 
@@ -167,8 +176,8 @@
     border-top: 5px solid var(--vscode-button-background); /* Blue */
     border-bottom: 5px solid var(--vscode-button-background); /* Blue */
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     animation: spin 2s linear infinite;
     }
 
@@ -176,6 +185,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-top: 20px;
     }
 
     @keyframes spin {
@@ -191,16 +201,16 @@
         overflow-y: scroll;
     }
 </style>
-<input class="searchQuery"/>
+<input class="searchQuery" id="myInput"/>
 <div for="topQ" id = "Result">Top Search Results:</div>
 
 <select id="Options">
     
-    <option>Option1ffffffffffffffffffffffffffffffff</option>
+    <option>Option1</option>
 
     
 </select>
-<button class="btn" on:click ={fetchFromServer}>
+<button id="myBtn" class="btn" on:click ={fetchFromServer}>
     Search
 </button>
 
@@ -224,7 +234,6 @@
 <br>
 <h3 style="visibility:hidden">QUESTION:</h3>
 <p id="fullQuestion"></p>
-<hr class="dotted" style="visibility:hidden">
 <br>
 <h3 style="visibility:hidden">ANSWER:</h3>
 <div style="visibility:hidden" id="fullAnswer">
