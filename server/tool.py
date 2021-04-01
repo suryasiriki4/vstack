@@ -170,30 +170,41 @@ def store_questions(question_ids):
     return questions
 
 
-def print_results(QUSTION_IDS, QUESTIONS, ANSWERS):
+def print_results(questions_urls, QUSTION_IDS, QUESTIONS, ANSWERS):
 
     num_of_results = len(QUSTION_IDS)
-    answers = []
+    
+    search_results = []
 
     for i in range(num_of_results):
-        answers_temp = []
+    
         answer = ANSWERS[i].body
         parser = PlaintextParser.from_string(answer, Tokenizer("english"))
 
         summarizer = LexRankSummarizer()
         summary = summarizer(parser.document, 10)
-        answers_temp.append(QUESTIONS[i].body)
-        answers_temp.append(ANSWERS[i].author)
-        answerTemp = ""
+        # answers_temp.append(QUESTIONS[i].body)
+        # answers_temp.append(ANSWERS[i].author)
+        # answerTemp = ""        
 
-        answers_temp.append(answer)
+        # answers_temp.append(answer)
 
-        answers.append(answers_temp)
+        temp_result = {
+        "index": i,
+        "Title": QUESTIONS[i].body,
+        #"Body": result.find_all("div", class_="excerpt")[0].text,
+        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Answers": 1,
+        "Answer": answer,
+        "URL": questions_urls[i],
+    }
 
-    return answers
+        search_results.append(temp_result)
+
+    return search_results
 
 
-def fun(query):
+def search_query(query):
         print("1\n")
         # getting all the urls of the questions related to the query.
         questions_urls = get_questions_urls(query)
@@ -208,5 +219,5 @@ def fun(query):
         ANSWERS = get_answers_to_questions(QUSTION_IDS)
         print("1\n")
         # printing all the resutled questions with answers
-        return print_results(QUSTION_IDS, QUESTIONS, ANSWERS)
+        return print_results(questions_urls, QUSTION_IDS, QUESTIONS, ANSWERS)
 
