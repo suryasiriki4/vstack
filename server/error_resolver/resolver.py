@@ -11,8 +11,8 @@ import webbrowser
 
 from urwid.widget import (BOX, FLOW, FIXED)
 
-sys.path.append(os.path.abspath('../'))
-from tool import search_query
+from inspection import inspect_error
+from err_hint import handle_error
 
 
 # ASCII codes of colors
@@ -162,9 +162,6 @@ def execute(command):
 
 ## Helper Classes ##
 
-
-###############################################################################
-# SCROLLABLE MODULE #
 
 class Scrollable(urwid.WidgetDecoration):
     # TODO: Fix scrolling behavior (works with up/down keys, not with cursor)
@@ -357,12 +354,162 @@ class Scrollable(urwid.WidgetDecoration):
     def scroll_ratio(self):
         return self._rows_max_cached / self._rows_max_displayable
 
+class ScrollBar(urwid.WidgetDecoration):
+    # TODO: Change scrollbar size and color(?)
 
-########################
+    def sizing(self):
+        return frozenset((BOX,))
 
-#####################################
-# SELCTABLE MODULE #
 
+    def selectable(self):
+        return True
+
+
+    def __init__(self, widget, thumb_char=u'\u2588', trough_char=' ',
+                 side=SCROLLBAR_RIGHT, width=1):
+        """Box widget that adds a scrollbar to `widget`."""
+        self.__super.__init__(widget)
+        self._thumb_char = thumb_char
+        self._trough_char = trough_char
+        self.scrollbar_side = side
+        self.scrollbar_width = max(1, width)
+        self._original_widget_size = (0, 0)
+        self._dragging = False
+
+
+    def render(self, size, focus=False):
+        maxcol, maxrow = size
+
+        ow = self._original_widget
+        ow_base = self.scrolling_base_widget
+        ow_rows_max = ow_base.rows_max(size, focus)
+        if ow_rows_max <= maxrow: # Canvas fits without scrolling - no scrollbar needed
+            self._original_widget_size = size
+            return ow.render(size, focus)
+
+        sb_width = self._scrollbar_width
+        self._original_widget_size = ow_size = (maxcol-sb_width, maxrow)
+        ow_canv = ow.render(ow_size, focus)
+
+        pos = ow_base.get_scrollpos(ow_size, focus)
+        posmax = ow_rows_max - maxrow
+
+        # Thumb shrinks/grows according to the ratio of
+        # <number of visible lines> / <number of total lines>
+        thumb_weight = min(1, maxrow / max(1, ow_rows_max))
+        thumb_height = max(1, round(thumb_weight * maxrow))
+
+        # Thumb may only touch top/bottom if the first/last row is visible
+        top_weight = float(pos) / max(1, posmax)
+        top_height = int((maxrow-thumb_height) * top_weight)
+        if top_height == 0 and top_weight > 0:
+            top_height = 1
+
+        # Bottom part is remaining space
+        bottom_height = maxrow - thumb_height - top_height
+        assert thumb_height + top_height + bottom_height == maxrow
+
+        # Create scrollbar canvas
+        top = urwid.SolidCanvas(self._trough_char, sb_width, top_height)
+        thumb = urwid.SolidCanvas(self._thumb_char, sb_width, thumb_height)
+        bottom = urwid.SolidCanvas(self._trough_char, sb_width, bottom_height)
+        sb_canv = urwid.CanvasCombine([
+            (top, None, False),
+            (thumb, None, False),
+            (bottom, None, False),
+        ])
+
+        combinelist = [(ow_canv, None, True, ow_size[0]), (sb_canv, None, False, sb_width)]
+        if self._scrollbar_side != SCROLLBAR_LEFT:
+            return urwid.CanvasJoin(combinelist)
+        else:
+            return urwid.CanvasJoin(reversed(combinelist))
+
+
+    @property
+    def scrollbar_width(self):
+        return max(1, self._scrollbar_width)
+
+
+    @scrollbar_width.setter
+    def scrollbar_width(self, width):
+        self._scrollbar_width = max(1, int(width))
+        self._invalidate()
+
+
+    @property
+    def scrollbar_side(self):
+        return self._scrollbar_side
+
+
+    @scrollbar_side.setter
+    def scrollbar_side(self, side):
+        if side not in (SCROLLBAR_LEFT, SCROLLBAR_RIGHT):
+            raise ValueError("scrollbar_side must be 'left' or 'right', not %r" % side)
+        self._scrollbar_side = side
+        self._invalidate()
+
+
+    @property
+    def scrolling_base_widget(self):
+        """Nearest `base_widget` that is compatible with the scrolling API."""
+        def orig_iter(w):
+            while hasattr(w, "original_widget"):
+                w = w.original_widget
+                yield w
+            yield w
+
+        def is_scrolling_widget(w):
+            return hasattr(w, "get_scrollpos") and hasattr(w, "rows_max")
+
+        for w in orig_iter(self):
+            if is_scrolling_widget(w):
+                return w
+
+    @property
+    def scrollbar_column(self):
+        if self.scrollbar_side == SCROLLBAR_LEFT:
+            return 0
+        if self.scrollbar_side == SCROLLBAR_RIGHT:
+            return self._original_widget_size[0]
+
+    def keypress(self, size, key):
+        return self._original_widget.keypress(self._original_widget_size, key)
+
+
+    def mouse_event(self, size, event, button, col, row, focus):
+        ow = self._original_widget
+        ow_size = self._original_widget_size
+        handled = False
+        if hasattr(ow, "mouse_event"):
+            handled = ow.mouse_event(ow_size, event, button, col, row, focus)
+
+        if not handled and hasattr(ow, "set_scrollpos"):
+            if button == 4: # Scroll wheel up
+                pos = ow.get_scrollpos(ow_size)
+                if pos > 0:
+                    ow.set_scrollpos(pos - 1)
+                    return True
+            elif button == 5: # Scroll wheel down
+                pos = ow.get_scrollpos(ow_size)
+                ow.set_scrollpos(pos + 1)
+                return True
+            elif col == self.scrollbar_column:
+                ow.set_scrollpos(int(row*ow.scroll_ratio))
+                if event == "mouse press":
+                    self._dragging = True
+                elif event == "mouse release":
+                    self._dragging = False
+            elif self._dragging:
+                ow.set_scrollpos(int(row*ow.scroll_ratio))
+                if event == "mouse release":
+                    self._dragging = False
+
+
+
+        return False
+
+##################################################################################
 class SelectableText(urwid.Text):
     def selectable(self):
         return True
@@ -417,15 +564,15 @@ class App(object):
     def _handle_input(self, input):
         if input == "enter" or (input[0]=='meta mouse press' and input[1]==1): # View answers   Either press Enter or "ALT + Left Click"
             url = self._get_selected_link()
-            index = int(self._get_selected_index())
 
             if url != None:
                 self.viewing_answers = True
-                question_title, question_desc, question_stats, answers = get_question_and_answers(index, self.search_results)
+                question_title, question_desc, question_stats, answers = get_question_and_answers(url)
 
                 pile = urwid.Pile(self._stylize_question(question_title, question_desc, question_stats) + [urwid.Divider('*')] +
                 interleave(answers, [urwid.Divider('-')] * (len(answers) - 1)))
                 padding = ScrollBar(Scrollable(urwid.Padding(pile, left=2, right=2)))
+                #filler = urwid.Filler(padding, valign="top")
                 linebox = urwid.LineBox(padding)
 
                 menu = urwid.Text([
@@ -455,14 +602,6 @@ class App(object):
         elif input in ('q', 'Q'): # Quit
             raise urwid.ExitMainLoop()
 
-    def _get_selected_index(self):
-        focus_widget, idx = self.content_container.get_focus() # Gets selected item
-        title = focus_widget.base_widget.text
-
-        for result in self.search_results:
-            if title == self._stylize_title(result):
-                return result["index"]
-
 
     def _get_selected_link(self):
         focus_widget, idx = self.content_container.get_focus() # Gets selected item
@@ -475,9 +614,9 @@ class App(object):
 
     def _stylize_title(self, search_result):
         if search_result["Answers"] == 1:
-            return "%s (1 Answer)" % search_result["Title"][0:70] + "..."
+            return "%s (1 Answer)" % search_result["Title"]
         else:
-            return "%s (%s Answers)" % (search_result["Title"][0:70] + "...", search_result["Answers"])
+            return "%s (%s Answers)" % (search_result["Title"], search_result["Answers"])
 
 
     def _stylize_question(self, title, desc, stats):
@@ -516,10 +655,8 @@ def print_help():
     print("\nIf you just want to query Stack Overflow, use the -q parameter: $ rebound -q %sWhat is an array comprehension?%s\n\n" % (YELLOW, END))
 
 
-def get_question_and_answers(index, search_results):
-    return search_results[index]["Title"], urwid.Text("description"), 1, [urwid.Text(search_results[index]["Answer"])]
-
-#####################################
+def get_question_and_answers(url):
+    return "question title", urwid.Text("description"), 3, [urwid.Text("answer 1"), urwid.Text("answer 2"), urwid.Text("answer 3")]
 
 
 def main():
@@ -533,36 +670,34 @@ def main():
 
     output, error = execute([programming_language] + file_path)
 
+    error_info = inspect_error(error)
+
+    qry, err_hint = handle_error(error_info)
+
     error_message = parse_error(error, programming_language)
 
     query = "%s %s" % (programming_language, error_message)
 
-    # search_results = []
+    search_results = []
 
-    search_results = search_query(query)
+    search_results.append({
+        "Title": "question number 1",
+        #"Body": result.find_all("div", class_="excerpt")[0].text,
+        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Answers": 1,
+        "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
+    })
 
-    # search_results.append({
-    #     "index": 0,
-    #     "Title": "question number 1",
-    #     #"Body": result.find_all("div", class_="excerpt")[0].text,
-    #     #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
-    #     "Answers": 1,
-    #     "Answer": "sample answer",
-    #     "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
-    # })
+    search_results.append({
+        "Title": "question number 2",
+        #"Body": result.find_all("div", class_="excerpt")[0].text,
+        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Answers": 1,
+        "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
+    })
 
-    # search_results.append({
-    #     "index": 1,
-    #     "Title": "question number 2",
-    #     #"Body": result.find_all("div", class_="excerpt")[0].text,
-    #     #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
-    #     "Answers": 1,
-    #     "Answer": "sample answer",
-    #     "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
-    # })
-
-    if confirm("\nDiplay Stack Overflow Results") :
-        App(search_results)
+    # if confirm("\nDiplay Stack Overflow Results") :
+    #     App(search_results)
 
        
 
