@@ -11,8 +11,8 @@ import webbrowser
 
 from urwid.widget import (BOX, FLOW, FIXED)
 
-sys.path.append(os.path.abspath('../'))
-from tool import search_query
+from inspection import inspect_error
+from err_hint import handle_error
 
 
 # ASCII codes of colors
@@ -162,9 +162,6 @@ def execute(command):
 
 ## Helper Classes ##
 
-
-###############################################################################
-# SCROLLABLE MODULE #
 
 class Scrollable(urwid.WidgetDecoration):
     # TODO: Fix scrolling behavior (works with up/down keys, not with cursor)
@@ -360,6 +357,7 @@ class Scrollable(urwid.WidgetDecoration):
 
 ##########################################################################
 # SCROLLBAR CLASS MODULE #
+##########################################################################
 class ScrollBar(urwid.WidgetDecoration):
     # TODO: Change scrollbar size and color(?)
 
@@ -517,6 +515,155 @@ class ScrollBar(urwid.WidgetDecoration):
 ##########################################################################
 # SELCTABLE MODULE #
 ##########################################################################
+##################################################################################
+class SelectableText(urwid.Text):
+    def selectable(self):
+        return True
+
+
+    def keypress(self, size, key):
+        return key
+
+# helper function
+def interleave(a, b):
+    result = []
+    while a and b:
+        result.append(a.pop(0))
+        result.append(b.pop(0))
+
+    result.extend(a)
+    result.extend(b)
+
+    return result
+
+class App(object):
+    def __init__(self, search_results):
+        self.search_results, self.viewing_answers = search_results, False
+        self.palette = [
+            ("title", "light cyan,bold", "default", "standout"),
+            ("stats", "light green", "default", "standout"),
+            ("menu", "black", "light cyan", "standout"),
+            ("reveal focus", "black", "light cyan", "standout"),
+            ("reveal viewed focus", "yellow, bold", "light cyan", "standout"),
+            ("no answers", "light red", "default", "standout"),
+            ("code", "brown", "default", "standout"),
+            ("viewed", "yellow", "default", "standout")
+        ]
+        self.menu = urwid.Text([
+            u'\n',
+            ("menu", u" ENTER "), ("light gray", u" View answers "),
+            ("menu", u" B "), ("light gray", u" Open browser "),
+            ("menu", u" Q "), ("light gray", u" Quit"),
+        ])
+
+        results = list(map(lambda result: urwid.AttrMap(SelectableText(self._stylize_title(result)), None, "reveal focus"), self.search_results)) # TODO: Add a wrap='clip' attribute
+        self.content = urwid.SimpleListWalker(results)
+        self.content_container = urwid.ListBox(self.content)
+        layout = urwid.Frame(body=self.content_container, footer=self.menu)
+
+        self.main_loop = urwid.MainLoop(layout, self.palette, unhandled_input=self._handle_input)
+        self.original_widget = self.main_loop.widget
+
+        self.main_loop.run()
+
+
+    def _handle_input(self, input):
+        if input == "enter" or (input[0]=='meta mouse press' and input[1]==1): # View answers   Either press Enter or "ALT + Left Click"
+            url = self._get_selected_link()
+
+            if url != None:
+                self.viewing_answers = True
+                question_title, question_desc, question_stats, answers = get_question_and_answers(url)
+
+                pile = urwid.Pile(self._stylize_question(question_title, question_desc, question_stats) + [urwid.Divider('*')] +
+                interleave(answers, [urwid.Divider('-')] * (len(answers) - 1)))
+                padding = ScrollBar(Scrollable(urwid.Padding(pile, left=2, right=2)))
+                #filler = urwid.Filler(padding, valign="top")
+                linebox = urwid.LineBox(padding)
+
+                menu = urwid.Text([
+                    u'\n',
+                    ("menu", u" ESC "), ("light gray", u" Go back "),
+                    ("menu", u" B "), ("light gray", u" Open browser "),
+                    ("menu", u" Q "), ("light gray", u" Quit"),
+                ])
+
+                # highlight the selected answer
+                _, idx = self.content_container.get_focus()
+                txt = self.content[idx].original_widget.text
+                self.content[idx] = urwid.AttrMap(SelectableText(txt), 'viewed', 'reveal viewed focus')
+
+                self.main_loop.widget = urwid.Frame(body=urwid.Overlay(linebox, self.content_container, "center", ("relative", 60), "middle", 23), footer=menu)
+        elif input in ('b', 'B') or (input[0]=='ctrl mouse press' and input[1]==1): # Open link     Either press (B or b) or "CTRL + Left Click"
+            url = self._get_selected_link()
+
+            if url != None:
+                webbrowser.open(url)
+        elif input == "esc": # Close window
+            if self.viewing_answers:
+                self.main_loop.widget = self.original_widget
+                self.viewing_answers = False
+            else:
+                raise urwid.ExitMainLoop()
+        elif input in ('q', 'Q'): # Quit
+            raise urwid.ExitMainLoop()
+
+
+    def _get_selected_link(self):
+        focus_widget, idx = self.content_container.get_focus() # Gets selected item
+        title = focus_widget.base_widget.text
+
+        for result in self.search_results:
+            if title == self._stylize_title(result): # Found selected title's search_result dict
+                return result["URL"]
+
+
+    def _stylize_title(self, search_result):
+        if search_result["Answers"] == 1:
+            return "%s (1 Answer)" % search_result["Title"]
+        else:
+            return "%s (%s Answers)" % (search_result["Title"], search_result["Answers"])
+
+
+    def _stylize_question(self, title, desc, stats):
+        new_title = urwid.Text(("title", u"%s" % title))
+        new_stats = urwid.Text(("stats", u"%s\n" % stats))
+
+        return [new_title, desc, new_stats]
+
+##################################################################################
+
+## Helper Functions ##
+
+
+def confirm(question):
+    """Prompts a given question and handles user input."""
+    valid = {"yes": True, 'y': True, "ye": True,
+             "no": False, 'n': False, '': True}
+    prompt = " [Y/n] "
+
+    while True:
+        print(BOLD + CYAN + question + prompt + END)
+        choice = input().lower()
+        if choice in valid:
+            return valid[choice]
+
+        print("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
+
+
+def print_help():
+    """Prints usage instructions."""
+    print("%sRebound, V1.1.9a1 - Made by @shobrook%s\n" % (BOLD, END))
+    print("Command-line tool that automatically searches Stack Overflow and displays results in your terminal when you get a compiler error.")
+    print("\n\n%sUsage:%s $ rebound %s[file_name]%s\n" % (UNDERLINE, END, YELLOW, END))
+    print("\n$ python3 %stest.py%s   =>   $ rebound %stest.py%s" % (YELLOW, END, YELLOW, END))
+    print("\n$ node %stest.js%s     =>   $ rebound %stest.js%s\n" % (YELLOW, END, YELLOW, END))
+    print("\nIf you just want to query Stack Overflow, use the -q parameter: $ rebound -q %sWhat is an array comprehension?%s\n\n" % (YELLOW, END))
+
+
+def get_question_and_answers(url):
+    return "question title", urwid.Text("description"), 3, [urwid.Text("answer 1"), urwid.Text("answer 2"), urwid.Text("answer 3")]
+
 
 
 def main():
@@ -530,36 +677,34 @@ def main():
 
     output, error = execute([programming_language] + file_path)
 
+    error_info = inspect_error(error)
+
+    qry, err_hint = handle_error(error_info)
+
     error_message = parse_error(error, programming_language)
 
     query = "%s %s" % (programming_language, error_message)
 
-    # search_results = []
+    search_results = []
 
-    search_results = search_query(query)
+    search_results.append({
+        "Title": "question number 1",
+        #"Body": result.find_all("div", class_="excerpt")[0].text,
+        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Answers": 1,
+        "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
+    })
 
-    # search_results.append({
-    #     "index": 0,
-    #     "Title": "question number 1",
-    #     #"Body": result.find_all("div", class_="excerpt")[0].text,
-    #     #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
-    #     "Answers": 1,
-    #     "Answer": "sample answer",
-    #     "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
-    # })
+    search_results.append({
+        "Title": "question number 2",
+        #"Body": result.find_all("div", class_="excerpt")[0].text,
+        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Answers": 1,
+        "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
+    })
 
-    # search_results.append({
-    #     "index": 1,
-    #     "Title": "question number 2",
-    #     #"Body": result.find_all("div", class_="excerpt")[0].text,
-    #     #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
-    #     "Answers": 1,
-    #     "Answer": "sample answer",
-    #     "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
-    # })
-
-    if confirm("\nDiplay Stack Overflow Results") :
-        App(search_results)
+    # if confirm("\nDiplay Stack Overflow Results") :
+    #     App(search_results)
 
        
 
