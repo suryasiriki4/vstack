@@ -1,7 +1,5 @@
-print("hello world from test")
-
-a = "a"
-b = "a"
+a = 'a'
+b = 'a'
 
 if a = b:
-    print('true')
+    print ("eh")
