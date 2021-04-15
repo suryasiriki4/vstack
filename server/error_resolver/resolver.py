@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import urwid
+import importlib
 
 from queue import Queue
 from subprocess import PIPE, Popen
@@ -13,6 +14,12 @@ from urwid.widget import (BOX, FLOW, FIXED)
 
 from inspection import inspect_error
 from err_hint import handle_error
+
+from ..tool import search_query
+
+# sys.path.append(os.path.abspath("/home/"))
+# from  ..summariser import sumy
+# from sumy import get_summarised_answer
 
 
 # ASCII codes of colors
@@ -671,13 +678,14 @@ def main():
 
     if programming_language == '': # Unknown language
             print("\n%s%s%s" % (RED, "Sorry, resolver doesn't support this file type.\n", END))
-            return
-    
+            return      
+
+
     file_path = sys.argv[1:]
 
     output, error = execute([programming_language] + file_path)
 
-    error_info = inspect_error(error)
+    error_info = inspect_error(error, programming_language)
 
     qry, err_hint = handle_error(error_info)
 
@@ -685,7 +693,13 @@ def main():
 
     query = "%s %s" % (programming_language, error_message)
 
-    search_results = []
+    search_results = tool.search_query(query)
+
+    answers = [result.Answer for result in search_results]
+
+    summarized_answer = get_summarised_answer(answers)
+
+    print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",

@@ -1,6 +1,3 @@
-# regular expression
-# install numpy
-# python3 -c "import nltk; nltk.download('punkt')"
 import re
 import sys
 import os
@@ -11,15 +8,14 @@ import googlesearch
 from html2text import html2text
 import random
 
-import random
 import sumy
-
 
 import json
 
-from utils import ANSWERS_URL, QUESTIONS_URL
+from utils import ANSWERS_URL, QUESTIONS_URL, SEARCH_URL
 from utils import Question, Answer
 from storage import QUESTIONS, ANSWERS, QUSTION_IDS
+from slugify import slugify
 
 
 from sumy.parsers.plaintext import PlaintextParser
@@ -88,14 +84,71 @@ def get_search_results(soup):
         search_results.append(result)
 
 
-def get_questions_urls(query):
+def google_questions(query):
     """ wrapper function for get_search_results"""
 
+    # getting question urls from search engine
     search_text = query + " site:stackoverflow.com"
 
-    questions_urls = list(googlesearch.search(search_text))[:4]
+    questions_urls = list(googlesearch.search(search_text))[:3]
 
-    return questions_urls
+    # getting question ids from question urls
+    question_ids = []
+
+    for q in questions_urls:
+        if re.findall(r"/\d+/", q) != []:
+            question_ids.append(re.findall(r"/\d+/", q)[0][1:-1])
+
+    questions = []
+
+    for qid in question_ids:
+        response = requests.get(QUESTIONS_URL.replace("<id>", qid))
+        items = response.json()["items"]
+
+        if items == []:
+            continue
+
+        question_html = items[0]
+
+        question_body = question_html["body"]
+
+        markdown_question_body = html2text(question_body)
+
+        questions.append(Question(id=qid, has_accepted=None, body=markdown_question_body, url=question_html["link"]))
+    
+    return questions
+
+def ask_stackoverflow(query):
+    """Ask StackOverflow (so) API for questions."""
+
+    if query is None:
+        return []
+
+    print(query)
+
+    response_json = requests.get(query).json()
+    items = response_json["items"]
+
+    questions = []
+
+    for question in items:
+
+        if question["is_answered"]:
+            questions.append(Question(id=str(question["question_id"]), has_accepted="accepted_answer_id" in question, body=question["title"], url=question["link"]))
+
+    return questions
+
+def convert_to_searchable_query (query):
+
+    error_message_slug = slugify(query, separator="+")
+    order = "&order=desc"
+    sort = "&sort=relevance"
+    intitle = f"&intitle={error_message_slug}"
+
+    search_query = SEARCH_URL + order + sort + intitle
+
+    return search_query
+
 
 
 def get_question_ids(questions_urls):
@@ -112,16 +165,19 @@ def get_question_ids(questions_urls):
     return question_ids
 
 
-def get_answers_to_questions(question_ids):
+def get_answers_to_questions(questions):
     """ retriving the most voted anwers and the accepted answers for the question with given ids """
 
     answers = []
 
-    for question_id in question_ids:
+    for question in questions:
 
-        response = requests.get(ANSWERS_URL.replace("<id>", question_id))
+        response = requests.get(ANSWERS_URL.replace("<id>", question.id))
         items = response.json()["items"]
 
+        if items == []:
+            continue
+        
         if items == []:
             continue
 
@@ -153,6 +209,7 @@ def store_questions(question_ids):
         response = requests.get(QUESTIONS_URL.replace("<id>", question_id))
         items = response.json()["items"]
 
+
         if items == []:
             continue
 
@@ -170,34 +227,27 @@ def store_questions(question_ids):
     return questions
 
 
-def print_results(questions_urls, QUSTION_IDS, QUESTIONS, ANSWERS):
+def print_results(questions, answers):
 
-    num_of_results = len(QUSTION_IDS)
+    num_of_results = len(questions)
     
     search_results = []
 
     for i in range(num_of_results):
     
-        answer = ANSWERS[i].body
+        answer = answers[i].body
         parser = PlaintextParser.from_string(answer, Tokenizer("english"))
 
         summarizer = LexRankSummarizer()
         summary = summarizer(parser.document, 10)
-        # answers_temp.append(QUESTIONS[i].body)
-        # answers_temp.append(ANSWERS[i].author)
-        # answerTemp = ""        
-
-        # answers_temp.append(answer)
 
         temp_result = {
         "index": i,
-        "Title": QUESTIONS[i].body,
-        #"Body": result.find_all("div", class_="excerpt")[0].text,
-        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
+        "Title": questions[i].body,
         "Answers": 1,
         "Answer": answer,
-        "URL": questions_urls[i],
-    }
+        "URL": questions[i].url,
+        }
 
         search_results.append(temp_result)
 
@@ -206,18 +256,29 @@ def print_results(questions_urls, QUSTION_IDS, QUESTIONS, ANSWERS):
 
 def search_query(query):
         print("1\n")
-        # getting all the urls of the questions related to the query.
-        questions_urls = get_questions_urls(query)
-        print("1\n")
-        # getting question ids from the url.
-        QUSTION_IDS = get_question_ids(questions_urls)
-        print("1\n")
-        # storing questions all the top questions with ids in a list
-        QUESTIONS = store_questions(QUSTION_IDS)
-        print("1\n")
-        # getting top most answers to the question with the given ids.
-        ANSWERS = get_answers_to_questions(QUSTION_IDS)
-        print("1\n")
-        # printing all the resutled questions with answers
-        return print_results(questions_urls, QUSTION_IDS, QUESTIONS, ANSWERS)
 
+        searchable_query = convert_to_searchable_query(query)
+        questions = ask_stackoverflow(searchable_query) or google_questions(questions)
+
+        answers = get_answers_to_questions(questions)
+
+        print(answers)
+        
+
+        # getting all the urls of the questions related to the query.
+        #questions_urls = get_questions_urls(query)
+        #print("1\n")
+        # getting question ids from the url.
+        #QUSTION_IDS = get_question_ids(questions_urls)
+        #print("1\n")
+        # storing questions all the top questions with ids in a list
+        #QUESTIONS = store_questions(QUSTION_IDS)
+        #print("1\n")
+        # getting top most answers to the question with the given ids.
+        #ANSWERS = get_answers_to_questions(QUSTION_IDS)
+        #print("1\n")
+        # printing all the resutled questions with answers
+
+        return print_results(questions, answers)
+
+search_query("how to implement binary search")

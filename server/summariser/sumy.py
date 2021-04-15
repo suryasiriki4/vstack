@@ -55,32 +55,43 @@ def summarize(answer) :
         scores[sentence] = calculate_score(sentence, metric)
     top_sentences = list(sentences)
     top_sentences.sort(key=lambda x: scores[x], reverse=True)
-    top_sentences = top_sentences[:int(len(scores)*0.2)] 
+    top_sentences = top_sentences[:int(len(scores)*0.5)] 
     top_sentences.sort(key=lambda x: sentences.index(x))           
     return '. '.join(top_sentences) 
 
-answer = ["OpenGenus Foundation is an open-source non-profit organization with the aim to enable people to work offline for a longer stretch, reduce the time spent on searching by exploiting the fact that almost 90% of the searches are same for every generation and to make programming more accessible.OpenGenus is all about positivity and innovation.Over 1000 people have contributed to our missions and joined our family. We have been sponsored by three great companies namely Discourse, GitHub and DigitalOcean. We run one of the most popular Internship program and open-source projects and have made a positive impact over people's life"]
+f = open('./answers.txt', 'r')
+splited_answer = f.readlines()
+answer_string = "".join(splited_answer)
 
-intermediate_answer = summarize(answer)
+print(answer_string)
+
+def get_summarised_answer(answers):
+
+    answer = [answer_string]
+
+    intermediate_answer = summarize(answers)
 
 
-model = T5ForConditionalGeneration.from_pretrained('t5-small')
-tokenizer = T5Tokenizer.from_pretrained('t5-small')
-device = torch.device('cpu')
+    model = T5ForConditionalGeneration.from_pretrained('t5-small')
+    tokenizer = T5Tokenizer.from_pretrained('t5-small')
+    device = torch.device('cpu')
 
-preprocess_text = intermediate_answer.strip().replace("\n","")
-t5_prepared_Text = "summarize: "+preprocess_text
+    preprocess_text = intermediate_answer.strip().replace("\n","")
+    t5_prepared_Text = "summarize: "+preprocess_text
 
-tokenized_text = tokenizer.encode(t5_prepared_Text, return_tensors="pt").to(device)
+    tokenized_text = tokenizer.encode(t5_prepared_Text, return_tensors="pt").to(device)
 
- 
-summary_ids = model.generate(tokenized_text,
-                                    num_beams=4,
-                                    no_repeat_ngram_size=2,
-                                    min_length=30,
-                                    max_length=100,
-                                    early_stopping=True)
+    
+    summary_ids = model.generate(tokenized_text,
+                                        num_beams=4,
+                                        no_repeat_ngram_size=2,
+                                        min_length=30,
+                                        max_length=100,
+                                        early_stopping=True)
 
-final_answer = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    final_answer = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-print (final_answer)
+    print (final_answer)
+
+    return final_answer
+

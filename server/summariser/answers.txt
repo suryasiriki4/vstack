@@ -1,0 +1,33 @@
+Ensure that your array is sorted since this is the crux of a binary search.
+
+Any indexed/random-access data structure can be binary searched. So when you say using just an array, I would say arrays are the most basic/common data structure that a binary search is employed on.You can do it recursively (easiest) or iteratively. Time complexity of a binary search is O(log N) which is considerably faster than a linear search of checking each element at O(N). Here are some examples from Wikipedia: Binary Search Algorithm:
+ 
+Recursive: 
+
+BinarySearch(A[0..N-1], value, low, high) {  
+    if (high < low)  
+        return -1 // not found  
+    mid = low + ((high - low) / 2) 
+    if (A[mid] > value)  
+        return BinarySearch(A, value, low, mid-1)  
+    else if (A[mid] < value)  
+        return BinarySearch(A, value, mid+1, high)  
+    else
+       return mid // found
+    }
+Iterative:
+
+  BinarySearch(A[0..N-1], value) {
+   low = 0
+   high = N - 1
+   while (low <= high) {
+       mid = low + ((high - low) / 2)
+       if (A[mid] > value)
+           high = mid - 1
+       else if (A[mid] < value)
+           low = mid + 1
+       else
+           return mid // found
+   }
+   return -1 // not found
+}
