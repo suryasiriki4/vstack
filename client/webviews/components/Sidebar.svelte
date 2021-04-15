@@ -74,6 +74,8 @@
         })
         .then(res => res.json());
 
+        console.log(response);
+
         if (loader) {
             loader.remove();
         }
@@ -84,10 +86,10 @@
 
         console.log(arrayOfQuestions);
 
-        question1.innerText = arrayOfQuestions[0][0].substr(0, 100) + "...";
-        question2.innerText = arrayOfQuestions[1][0].substr(0, 100) + "...";
-        question3.innerText = arrayOfQuestions[2][0].substr(0, 100) + "...";
-        question4.innerText = arrayOfQuestions[3][0].substr(0, 100) + "...";
+        question1.innerText = arrayOfQuestions[0].Title + "...";
+        question2.innerText = arrayOfQuestions[1].Title + "...";
+        question3.innerText = arrayOfQuestions[2].Title + "...";
+        question4.innerText = arrayOfQuestions[3].Title + "...";
 
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "visible"; 
@@ -116,8 +118,8 @@
 
         fullAnswer.style.visibility = "visible";
 
-        fullQuestion.innerText = arrayOfQuestions[num_of_question-1][0];
-        fullAnswer.innerText = arrayOfQuestions[num_of_question-1][2];
+        fullQuestion.innerText = arrayOfQuestions[num_of_question-1].Title;
+        fullAnswer.innerText = arrayOfQuestions[num_of_question-1].Answer;
     }
 </script>
 <style>

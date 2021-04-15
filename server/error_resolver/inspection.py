@@ -4,7 +4,7 @@ import sys
 from utils import BUILTINS
 
 
-def get_error_message(error):
+def get_error_message(error, programming_language):
     """Extracts the error message from the traceback.
     If no error message is found, will return None.
     Here's an example:
@@ -20,6 +20,10 @@ def get_error_message(error):
     """
 
     error_lines = error.splitlines()
+
+    if programming_language == 'node':
+        return error_lines[4]
+
     return error_lines[-1]
 
 def get_error_type(error_message):
@@ -35,7 +39,7 @@ def get_error_type(error_message):
     error_type = error_message.split(":")[0]
     return error_type
 
-def get_error_line(error):
+def get_error_line(error, programming_language):
     """Gets the error line from the compilation message
     Here's an example:
     input:
@@ -48,6 +52,12 @@ def get_error_line(error):
     output:
     2  # <class 'int'>
     """
+    if programming_language == 'node':
+        splitted_error_lines = error.splitlines()
+        error = splitted_error_lines[0]
+        num_regex = r"([0-9])*$"
+        line_num = re.search(num_regex, error)[0]
+        return(int(line_num))
 
     # This will match a line like this
     # 'File "foo.py", line 666'
@@ -56,7 +66,6 @@ def get_error_line(error):
     # at the end of a string (the error line)
     regex2 = r"([0-9])*$"
 
-
     try:
         error_header = re.search(regex1, error)[0]
         error_line = re.search(regex2, error_header)[0]
@@ -64,7 +73,7 @@ def get_error_line(error):
     except TypeError:
         return None
 
-def get_file_name(error_message):
+def get_file_name(error, programming_language):
     """Get the file name where the error originates'
     Here's an example:
 
@@ -77,6 +86,12 @@ def get_file_name(error_message):
     output:
     'example_code.py'
     """
+
+    if programming_language == 'node':
+        splitted_error_lines = error.splitlines()
+        file_path = splitted_error_lines[0].split(':')[0]
+        return(file_path)
+
     # This will match a line like this
     # 'File "foo.py", line 666'
     regex1 = r'File "(.)*", line\s(\d)*'
@@ -84,7 +99,7 @@ def get_file_name(error_message):
     regex2 = r'"(.)*"'
 
     try:
-        error_header = re.search(regex1, error_message)[0]
+        error_header = re.search(regex1, error)[0]
         file_name = re.search(regex2, error_header)[0]
         return file_name[1:-1]  # remove double quotes
     except TypeError:
@@ -110,13 +125,13 @@ def get_offending_line(error_line, code):
 
     return offending_line
 
-def inspect_error(error):
-    err_msg = get_error_message(error)
-    err_msg = err_msg[1:]
+def inspect_error(error, programming_language):
 
+    err_msg = get_error_message(error, programming_language)
+    err_msg = err_msg[1:]
     err_typ = get_error_type(err_msg)
-    err_line = get_error_line(error)
-    err_file_name = get_file_name(error)
+    err_line = get_error_line(error, programming_language)
+    err_file_name = get_file_name(error, programming_language)
     code = get_code(err_file_name)
     offending_line = get_offending_line(err_line, code)
 
