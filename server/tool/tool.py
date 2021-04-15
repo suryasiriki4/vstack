@@ -12,8 +12,9 @@ import sumy
 
 import json
 
-from utils import ANSWERS_URL, QUESTIONS_URL, SEARCH_URL
-from utils import Question, Answer
+
+from .utils import ANSWERS_URL, QUESTIONS_URL, SEARCH_URL
+from .utils import Question, Answer
 from storage import QUESTIONS, ANSWERS, QUSTION_IDS
 from slugify import slugify
 
@@ -251,19 +252,31 @@ def print_results(questions, answers):
 
         search_results.append(temp_result)
 
+    # results = [{
+    #     "index": 0,
+    #     "Title": "how are you ??",
+    #     "Answers": 1,
+    #     "Answer": "i am fine",
+    #     "URL": "www.stackoverflow.com"
+    # }]
+
+    # return results
+
     return search_results
 
 
-def search_query(query):
+def search_query(query, is_query_constructed):
         print("1\n")
 
-        searchable_query = convert_to_searchable_query(query)
-        questions = ask_stackoverflow(searchable_query) or google_questions(questions)
-
-        answers = get_answers_to_questions(questions)
-
-        print(answers)
+        # if is_query_constructed == False:
+        #     query = convert_to_searchable_query(query)
         
+        # questions = ask_stackoverflow(query)
+        
+        # if questions == []:
+        #     questions = google_questions(query)
+
+        # answers = get_answers_to_questions(questions)
 
         # getting all the urls of the questions related to the query.
         #questions_urls = get_questions_urls(query)
@@ -278,7 +291,5 @@ def search_query(query):
         #ANSWERS = get_answers_to_questions(QUSTION_IDS)
         #print("1\n")
         # printing all the resutled questions with answers
-
-        return print_results(questions, answers)
-
-search_query("how to implement binary search")
+        return print_results([], [])
+        # return print_results(questions, answers)

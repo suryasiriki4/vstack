@@ -1,7 +1,7 @@
 import re
 import sys
 
-from utils import BUILTINS
+from .err_utils import BUILTINS
 
 
 def get_error_message(error, programming_language):

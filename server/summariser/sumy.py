@@ -55,21 +55,15 @@ def summarize(answer) :
         scores[sentence] = calculate_score(sentence, metric)
     top_sentences = list(sentences)
     top_sentences.sort(key=lambda x: scores[x], reverse=True)
-    top_sentences = top_sentences[:int(len(scores)*0.5)] 
+    top_sentences = top_sentences[:int(len(scores)*0.2)] 
     top_sentences.sort(key=lambda x: sentences.index(x))           
     return '. '.join(top_sentences) 
 
-f = open('./answers.txt', 'r')
-splited_answer = f.readlines()
-answer_string = "".join(splited_answer)
 
-print(answer_string)
 
 def get_summarised_answer(answers):
 
-    answer = [answer_string]
-
-    intermediate_answer = summarize(answers)
+    intermediate_answer = summarize(answers[0])
 
 
     model = T5ForConditionalGeneration.from_pretrained('t5-small')
@@ -91,6 +85,6 @@ def get_summarised_answer(answers):
 
     final_answer = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-    print (final_answer)
+    # print (final_answer)
 
     return final_answer

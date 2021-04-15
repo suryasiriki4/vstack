@@ -5,9 +5,9 @@ from argparse import Namespace
 
 from slugify import slugify
 
-from utils import HINT_MESSAGES, SEARCH_URL
+from .err_utils import HINT_MESSAGES, SEARCH_URL
 
-from utils import (
+from .err_utils import (
     SINGLE_QUOTE_CHAR,
     SINGLE_SPACE_CHAR,
     EMPTY_STRING,

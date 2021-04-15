@@ -12,14 +12,12 @@ import webbrowser
 
 from urwid.widget import (BOX, FLOW, FIXED)
 
-from inspection import inspect_error
-from err_hint import handle_error
+from error_resolver.inspection import inspect_error
+from error_resolver.err_hint import handle_error
 
-from ..tool import search_query
+from tool.tool import search_query
 
-# sys.path.append(os.path.abspath("/home/"))
-# from  ..summariser import sumy
-# from sumy import get_summarised_answer
+from summariser.sumy import get_summarised_answer
 
 
 # ASCII codes of colors
@@ -571,10 +569,12 @@ class App(object):
     def _handle_input(self, input):
         if input == "enter" or (input[0]=='meta mouse press' and input[1]==1): # View answers   Either press Enter or "ALT + Left Click"
             url = self._get_selected_link()
+            focus_widget, idx = self.content_container.get_focus() # Gets selected item
+            search_results = self.search_results  
 
             if url != None:
                 self.viewing_answers = True
-                question_title, question_desc, question_stats, answers = get_question_and_answers(url)
+                question_title, question_desc, question_stats, answers = get_question_and_answers(url, search_results, idx)
 
                 pile = urwid.Pile(self._stylize_question(question_title, question_desc, question_stats) + [urwid.Divider('*')] +
                 interleave(answers, [urwid.Divider('-')] * (len(answers) - 1)))
@@ -662,8 +662,8 @@ def print_help():
     print("\nIf you just want to query Stack Overflow, use the -q parameter: $ rebound -q %sWhat is an array comprehension?%s\n\n" % (YELLOW, END))
 
 
-def get_question_and_answers(url):
-    return "question title", urwid.Text("description"), 3, [urwid.Text("answer 1"), urwid.Text("answer 2"), urwid.Text("answer 3")]
+def get_question_and_answers(url, search_results, idx):
+    return search_results[idx]["Title"], urwid.Text("description"), search_results[idx]["index"], [urwid.Text(search_results[idx]["Answer"])]
 
 
 def main():
@@ -680,19 +680,22 @@ def main():
 
     error_info = inspect_error(error, programming_language)
 
-    qry, err_hint = handle_error(error_info)
+    query, err_hint = handle_error(error_info)
 
-    error_message = parse_error(error, programming_language)
+    # error_message = parse_error(error, programming_language)
 
-    query = "%s %s" % (programming_language, error_message)
+    # query = "%s %s" % (programming_language, error_info["type"])
 
-    search_results = tool.search_query(query)
+    search_results = search_query(query, True)
 
-    answers = [result.Answer for result in search_results]
 
-    summarized_answer = get_summarised_answer(answers)
+    answers = [result["Answer"] for result in search_results]
 
-    print(summarized_answer)
+    print(answers[0])
+
+    # summarized_answer = get_summarised_answer(answers)
+
+    # print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",
@@ -710,8 +713,8 @@ def main():
         "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
     })
 
-    # if confirm("\nDiplay Stack Overflow Results") :
-    #     App(search_results)
+    if confirm("\nDiplay Stack Overflow Results") :
+        App(search_results)
 
        
 
