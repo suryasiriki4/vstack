@@ -361,6 +361,10 @@ class Scrollable(urwid.WidgetDecoration):
     def scroll_ratio(self):
         return self._rows_max_cached / self._rows_max_displayable
 
+
+##########################################################################
+# SCROLLBAR CLASS MODULE #
+##########################################################################
 class ScrollBar(urwid.WidgetDecoration):
     # TODO: Change scrollbar size and color(?)
 
@@ -515,7 +519,9 @@ class ScrollBar(urwid.WidgetDecoration):
 
 
         return False
-
+##########################################################################
+# SELCTABLE MODULE #
+##########################################################################
 ##################################################################################
 class SelectableText(urwid.Text):
     def selectable(self):
@@ -664,6 +670,7 @@ def print_help():
 
 def get_question_and_answers(url):
     return "question title", urwid.Text("description"), 3, [urwid.Text("answer 1"), urwid.Text("answer 2"), urwid.Text("answer 3")]
+
 
 
 def main():
