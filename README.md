@@ -5,7 +5,7 @@ A software tool which improves the human computer interaction by solving develop
 
 ## this vs code extension consists of mainly two features :
 * A side panel for searching any query or issue in stackoverflow and getting the most relevant results.
-* Generating meaningful errors, by summarizing the error message and shortly summarized solution from stack overflow.
+* Generating more readable errors, by summarizing the error message and shortly summarized solution from stack overflow.
 
 ## Images of Side Panel for accessing Stack Oveflow
 
