@@ -268,15 +268,15 @@ def print_results(questions, answers):
 def search_query(query, is_query_constructed):
         print("1\n")
 
-        # if is_query_constructed == False:
-        #     query = convert_to_searchable_query(query)
+        if is_query_constructed == False:
+            query = convert_to_searchable_query(query)
         
-        # questions = ask_stackoverflow(query)
+        questions = ask_stackoverflow(query)
         
-        # if questions == []:
-        #     questions = google_questions(query)
+        if questions == []:
+            questions = google_questions(query)
 
-        # answers = get_answers_to_questions(questions)
+        answers = get_answers_to_questions(questions)
 
         # getting all the urls of the questions related to the query.
         #questions_urls = get_questions_urls(query)
@@ -291,5 +291,6 @@ def search_query(query, is_query_constructed):
         #ANSWERS = get_answers_to_questions(QUSTION_IDS)
         #print("1\n")
         # printing all the resutled questions with answers
-        return print_results([], [])
-        # return print_results(questions, answers)
+        # return print_results([], [])
+
+        return print_results(questions, answers)
