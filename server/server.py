@@ -4,7 +4,8 @@ from flask import Flask, render_template, request, redirect, Response
 from flask_cors import CORS, cross_origin
 
 from storage import QUESTIONS
-import tool
+
+from tool.tool import search_query
 
 # initialization
 app = Flask(__name__)
@@ -18,11 +19,38 @@ def worker():
 
     print(data["search"])
 
-    print("hello world")
-
     x = {
-    "Questions": tool.search_query(data["search"]),
+    "Questions": search_query([None, data["search"]], None),
     }
+
+    # x = {
+    #     "Questions": [
+    #         {
+    #             "index":0,
+    #             "Title": "Question1",
+    #             "TitleTrunc": "Question1_trunc",
+    #             "Answer": "Answer for question 1",
+    #             "Answers": 1,
+    #             "URL": "www.stackoverflow.com",
+    #         },
+    #         {
+    #             "index":1,
+    #             "Title": "Question2",
+    #             "TitleTrunc": "Question2_trunc",
+    #             "Answer": "Answer for question 2",
+    #             "Answers": 1,
+    #             "URL": "www.stackoverflow.com",
+    #         },
+    #         {
+    #             "index":2,
+    #             "Title": "Question3",
+    #             "TitleTrunc": "Question3_trunc",
+    #             "Answer": "Answer for question 3",
+    #             "Answers": 1,
+    #             "URL": "www.stackoverflow.com",
+    #         }
+    #     ]
+    # }
 
 
     # convert into JSON:

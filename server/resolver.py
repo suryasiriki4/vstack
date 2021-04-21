@@ -12,14 +12,13 @@ import webbrowser
 
 from urwid.widget import (BOX, FLOW, FIXED)
 
-from inspection import inspect_error
-from err_hint import handle_error
+from error_resolver.inspection import inspect_error
+from error_resolver.err_hint import handle_error
+from error_resolver.ruby_err_hint import handle_error_ruby
 
-from ..tool import search_query
+from tool.tool import search_query
 
-# sys.path.append(os.path.abspath("/home/"))
-# from  ..summariser import sumy
-# from sumy import get_summarised_answer
+# from summariser.sumy import get_summarised_answer
 
 
 # ASCII codes of colors
@@ -58,6 +57,8 @@ def get_language(file_path):
         return "ruby"
     elif file_path.endswith(".cpp"):
         return 'cpp'
+    elif file_path.endswith(".javac"):
+        return 'javac'
     else:
         return '' # Unknown language
 
@@ -168,7 +169,6 @@ def execute(command):
 
 
 ## Helper Classes ##
-
 
 class Scrollable(urwid.WidgetDecoration):
     # TODO: Fix scrolling behavior (works with up/down keys, not with cursor)
@@ -362,9 +362,6 @@ class Scrollable(urwid.WidgetDecoration):
         return self._rows_max_cached / self._rows_max_displayable
 
 
-##########################################################################
-# SCROLLBAR CLASS MODULE #
-##########################################################################
 class ScrollBar(urwid.WidgetDecoration):
     # TODO: Change scrollbar size and color(?)
 
@@ -577,10 +574,12 @@ class App(object):
     def _handle_input(self, input):
         if input == "enter" or (input[0]=='meta mouse press' and input[1]==1): # View answers   Either press Enter or "ALT + Left Click"
             url = self._get_selected_link()
+            focus_widget, idx = self.content_container.get_focus() # Gets selected item
+            search_results = self.search_results  
 
             if url != None:
                 self.viewing_answers = True
-                question_title, question_desc, question_stats, answers = get_question_and_answers(url)
+                question_title, question_desc, question_stats, answers = get_question_and_answers(url, search_results, idx)
 
                 pile = urwid.Pile(self._stylize_question(question_title, question_desc, question_stats) + [urwid.Divider('*')] +
                 interleave(answers, [urwid.Divider('-')] * (len(answers) - 1)))
@@ -627,9 +626,9 @@ class App(object):
 
     def _stylize_title(self, search_result):
         if search_result["Answers"] == 1:
-            return "%s (1 Answer)" % search_result["Title"]
+            return "%s (1 Answer)" % search_result["TitleTrunc"]
         else:
-            return "%s (%s Answers)" % (search_result["Title"], search_result["Answers"])
+            return "%s (%s Answers)" % (search_result["TitleTrunc"], search_result["Answers"])
 
 
     def _stylize_question(self, title, desc, stats):
@@ -668,13 +667,22 @@ def print_help():
     print("\nIf you just want to query Stack Overflow, use the -q parameter: $ rebound -q %sWhat is an array comprehension?%s\n\n" % (YELLOW, END))
 
 
-def get_question_and_answers(url):
-    return "question title", urwid.Text("description"), 3, [urwid.Text("answer 1"), urwid.Text("answer 2"), urwid.Text("answer 3")]
+def get_question_and_answers(url, search_results, idx):
+    return search_results[idx]["Title"], urwid.Text("description"), search_results[idx]["index"], [urwid.Text(search_results[idx]["Answer"])]
 
+def remove_quoted_words(error_message):
+    """Removes quoted words from an error message.
+    Example:
+    input: "NameError: name 'a' is not defined"
+    output: "NameError: name is not defined"
+    """
+    return re.sub(r"'.*?'\s", "", error_message)
 
 
 def main():
     programming_language = get_language(sys.argv[1].lower())
+
+    print(programming_language)
 
     if programming_language == '': # Unknown language
             print("\n%s%s%s" % (RED, "Sorry, resolver doesn't support this file type.\n", END))
@@ -685,24 +693,42 @@ def main():
 
     output, error = execute([programming_language] + file_path)
 
+    # print(error)
+
     error_info = inspect_error(error, programming_language)
 
-    qry, err_hint = handle_error(error_info)
+    const_query = None
 
-    error_message = parse_error(error, programming_language)
+    # print(error_info)
+    if programming_language == "python3":
+        const_query, err_hint = handle_error(error_info)
+    elif programming_language == "ruby":
+        const_query, err_hint = handle_error_ruby(error_info)
+        print(err_hint)
+    elif programming_language == "node.js":
+        const_query, err_hint = handle_error(error_info)
+        print(err_hint)
+    
 
-    query = "%s %s" % (programming_language, error_message)
+    error_message = error_info["message"]
 
-    search_results = tool.search_query(query)
+    error_query = remove_quoted_words(error_message)
 
-    answers = [result.Answer for result in search_results]
+    print(error_message)
 
-    summarized_answer = get_summarised_answer(answers)
+    raw_query = "%s %s" % (programming_language, error_message)
+    
+    search_results = search_query([const_query, raw_query], error_info)
 
-    print(summarized_answer)
+    answers = [result["Answer"] for result in search_results]
+
+    # summarized_answer = get_summarised_answer(answers)
+
+    # print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",
+        "TitleTrunc": "title 1",
         #"Body": result.find_all("div", class_="excerpt")[0].text,
         #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
         "Answers": 1,
@@ -711,14 +737,15 @@ def main():
 
     search_results.append({
         "Title": "question number 2",
+        "TitleTrunc": "title 1",
         #"Body": result.find_all("div", class_="excerpt")[0].text,
         #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
         "Answers": 1,
         "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
     })
 
-    # if confirm("\nDiplay Stack Overflow Results") :
-    #     App(search_results)
+    if confirm("\nDiplay Stack Overflow Results") :
+        App(search_results)
 
        
 

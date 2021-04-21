@@ -12,9 +12,10 @@ import sumy
 
 import json
 
-from utils import ANSWERS_URL, QUESTIONS_URL, SEARCH_URL
-from utils import Question, Answer
-from storage import QUESTIONS, ANSWERS, QUSTION_IDS
+
+from .utils import ANSWERS_URL, QUESTIONS_URL, SEARCH_URL
+from .utils import Question, Answer
+# from storage import QUESTIONS, ANSWERS, QUSTION_IDS
 from slugify import slugify
 
 
@@ -127,6 +128,7 @@ def ask_stackoverflow(query):
     print(query)
 
     response_json = requests.get(query).json()
+    # print(response_json)
     items = response_json["items"]
 
     questions = []
@@ -241,9 +243,15 @@ def print_results(questions, answers):
         summarizer = LexRankSummarizer()
         summary = summarizer(parser.document, 10)
 
+        if len(questions[i].body) > 140:
+            question_title = questions[i].body[0:140] + "..."
+        else:
+            question_title = questions[i].body
+
         temp_result = {
         "index": i,
         "Title": questions[i].body,
+        "TitleTrunc": question_title,
         "Answers": 1,
         "Answer": answer,
         "URL": questions[i].url,
@@ -251,19 +259,44 @@ def print_results(questions, answers):
 
         search_results.append(temp_result)
 
+    # results = [{
+    #     "index": 0,
+    #     "Title": "how are you ??",
+    #     "Answers": 1,
+    #     "Answer": "i am fine",
+    #     "URL": "www.stackoverflow.com"
+    # }]
+
+    # return results
+
     return search_results
 
 
-def search_query(query):
+def search_query(query_list, error_info):
         print("1\n")
 
-        searchable_query = convert_to_searchable_query(query)
-        questions = ask_stackoverflow(searchable_query) or google_questions(questions)
+        const_query, raw_query = query_list
+
+        if const_query == None:
+            const_query = convert_to_searchable_query(raw_query)
+        
+        # query = "https://api.stackexchange.com/2.2/search?site=stackoverflow&order=desc&sort=relevance&tagged=python&intitle=nameerror+name+is+not+defined"
+
+        questions = []
+        
+        if error_info != None:
+            if error_info["prog_lang"] == "python3":
+                print(const_query)
+                questions = ask_stackoverflow(const_query)
+        else:
+            questions == ask_stackoverflow(const_query)
+        # query = "how to implement binary search"
+        
+        if questions == []:
+            print("entering google")
+            questions = google_questions(raw_query)
 
         answers = get_answers_to_questions(questions)
-
-        print(answers)
-        
 
         # getting all the urls of the questions related to the query.
         #questions_urls = get_questions_urls(query)
@@ -278,7 +311,8 @@ def search_query(query):
         #ANSWERS = get_answers_to_questions(QUSTION_IDS)
         #print("1\n")
         # printing all the resutled questions with answers
+        # return print_results([], [])
 
         return print_results(questions, answers)
 
-search_query("how to implement binary search")
+#search_query("https://api.stackexchange.com/2.2/search?site=stackoverflow&order=desc&sort=relevance&tagged=python&intitle=nameerror+name+is+not+defined", True)

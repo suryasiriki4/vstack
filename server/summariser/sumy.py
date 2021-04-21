@@ -1,17 +1,23 @@
 import torch
+import os
 import json 
 from transformers import T5Tokenizer, T5Config, T5ForConditionalGeneration
 
+# luhns heuristic method
 
-def load_common_words(answer) :
+# we load our file and thus take each sentence indivisually in lowercase.
+def load_common_words() :
+    f = open('./words.txt', 'r')
     common_words = set()
-    for word in answer :
+    for word in f :
         common_words.add(word.strip('\n').lower())
+    f.close()
     return common_words
 
+#  finding the most common words to our document based on their frequency and removing the unwanted stopwords.
 def top_words(answer) :
     record = {}
-    common_words = load_common_words(answer)
+    common_words = load_common_words()
     for line in answer:
         words = line.split()
         for word in words :
@@ -28,6 +34,7 @@ def top_words(answer) :
     occur.sort(reverse = True, key = lambda x : record[x])
     return set(occur[: int(len(occur) / 10) ])
 
+# calculating the score of each sentence
 def calculate_score(sentence, metric) :
     words = sentence.split()
     imp_words, total_words, begin_unimp, end, begin = [0]*5
@@ -44,6 +51,7 @@ def calculate_score(sentence, metric) :
         return float(imp_words**2)/float(unimportant)
     return 0.0
 
+# summarizing(extractive)
 def summarize(answer) :
     text = ""
     for line in answer :
@@ -53,29 +61,20 @@ def summarize(answer) :
     scores = {}
     for sentence in sentences :
         scores[sentence] = calculate_score(sentence, metric)
-    top_sentences = list(sentences)
-    top_sentences.sort(key=lambda x: scores[x], reverse=True)
-    top_sentences = top_sentences[:int(len(scores)*0.5)] 
-    top_sentences.sort(key=lambda x: sentences.index(x))           
-    return '. '.join(top_sentences) 
-
 f = open('./answers.txt', 'r')
 splited_answer = f.readlines()
 answer_string = "".join(splited_answer)
 
-print(answer_string)
 
+# final summarization(abstarctive using T5 trannsformers technique)
 def get_summarised_answer(answers):
-
-    answer = [answer_string]
 
     intermediate_answer = summarize(answers)
 
-
-    model = T5ForConditionalGeneration.from_pretrained('t5-small')
+    # preparing a model and tokenizer from t5-small parameters
     tokenizer = T5Tokenizer.from_pretrained('t5-small')
     device = torch.device('cpu')
-
+    # summarizing
     preprocess_text = intermediate_answer.strip().replace("\n","")
     t5_prepared_Text = "summarize: "+preprocess_text
 
@@ -88,10 +87,10 @@ def get_summarised_answer(answers):
                                         min_length=30,
                                         max_length=100,
                                         early_stopping=True)
-
+    # take most perfectly summarized one
     final_answer = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-    print (final_answer)
+    # print (final_answer)
 
     return final_answer
 

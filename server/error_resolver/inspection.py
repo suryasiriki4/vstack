@@ -1,7 +1,7 @@
 import re
 import sys
 
-from utils import BUILTINS
+from .err_utils import BUILTINS
 
 
 def get_error_message(error, programming_language):
@@ -23,10 +23,14 @@ def get_error_message(error, programming_language):
 
     if programming_language == 'node':
         return error_lines[4]
-
+    elif programming_language == 'ruby':
+        err_message = error.split(' ')[1:]
+        err_message = ' '.join(err_message)
+        return err_message
+    error_lines[-1] = error_lines[-1][1:]
     return error_lines[-1]
 
-def get_error_type(error_message):
+def get_error_type(error_message, programming_language):
     """Gets the type of the error message and check if it's a valid error
     else return None.
     Here's an example:
@@ -36,6 +40,10 @@ def get_error_type(error_message):
     output:
         'ModuleNotFoundError'
     """
+
+    if programming_language == "ruby":
+        return error_message[error_message.find("(")+1:error_message.find(")")]
+
     error_type = error_message.split(":")[0]
     return error_type
 
@@ -58,6 +66,11 @@ def get_error_line(error, programming_language):
         num_regex = r"([0-9])*$"
         line_num = re.search(num_regex, error)[0]
         return(int(line_num))
+    
+    if programming_language == 'ruby':
+        error_file_path = error.split(' ')[0]
+        line_num = error_file_path.split(':')[-2]
+        return int(line_num)
 
     # This will match a line like this
     # 'File "foo.py", line 666'
@@ -91,6 +104,12 @@ def get_file_name(error, programming_language):
         splitted_error_lines = error.splitlines()
         file_path = splitted_error_lines[0].split(':')[0]
         return(file_path)
+    
+    if programming_language == 'ruby':
+        file_path = error.split(' ')[0]
+        file_path = file_path.split(':')[0]
+        return file_path
+
 
     # This will match a line like this
     # 'File "foo.py", line 666'
@@ -128,9 +147,9 @@ def get_offending_line(error_line, code):
 def inspect_error(error, programming_language):
 
     err_msg = get_error_message(error, programming_language)
-    err_msg = err_msg[1:]
-    err_typ = get_error_type(err_msg)
-    err_line = get_error_line(error, programming_language)
+    print(err_msg)
+    err_typ = get_error_type(err_msg, programming_language)
+    err_line = get_error_line(error, programming_language)    
     err_file_name = get_file_name(error, programming_language)
     code = get_code(err_file_name)
     offending_line = get_offending_line(err_line, code)
@@ -143,6 +162,7 @@ def inspect_error(error, programming_language):
         "file": err_file_name,
         "code": code,
         "offending_line": offending_line,
+        "prog_lang": programming_language,
     }
 
     return error_info
