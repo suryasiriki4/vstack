@@ -18,7 +18,7 @@ from error_resolver.ruby_err_hint import handle_error_ruby
 
 from tool.tool import search_query
 
-from summariser.sumy import get_summarised_answer
+# from summariser.sumy import get_summarised_answer
 
 
 # ASCII codes of colors
@@ -722,9 +722,9 @@ def main():
 
     answers = [result["Answer"] for result in search_results]
 
-    summarized_answer = get_summarised_answer(answers)
+    # summarized_answer = get_summarised_answer(answers)
 
-    print(summarized_answer)
+    # print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",
