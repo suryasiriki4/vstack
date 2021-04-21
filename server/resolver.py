@@ -516,7 +516,9 @@ class ScrollBar(urwid.WidgetDecoration):
 
 
         return False
-
+##########################################################################
+# SELCTABLE MODULE #
+##########################################################################
 ##################################################################################
 class SelectableText(urwid.Text):
     def selectable(self):
@@ -675,6 +677,7 @@ def remove_quoted_words(error_message):
     output: "NameError: name is not defined"
     """
     return re.sub(r"'.*?'\s", "", error_message)
+
 
 def main():
     programming_language = get_language(sys.argv[1].lower())
