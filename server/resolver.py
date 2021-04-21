@@ -14,6 +14,7 @@ from urwid.widget import (BOX, FLOW, FIXED)
 
 from error_resolver.inspection import inspect_error
 from error_resolver.err_hint import handle_error
+from error_resolver.ruby_err_hint import handle_error_ruby
 
 from tool.tool import search_query
 
@@ -56,6 +57,8 @@ def get_language(file_path):
         return "ruby"
     elif file_path.endswith(".cpp"):
         return 'cpp'
+    elif file_path.endswith(".javac"):
+        return 'javac'
     else:
         return '' # Unknown language
 
@@ -166,7 +169,6 @@ def execute(command):
 
 
 ## Helper Classes ##
-
 
 class Scrollable(urwid.WidgetDecoration):
     # TODO: Fix scrolling behavior (works with up/down keys, not with cursor)
@@ -358,6 +360,7 @@ class Scrollable(urwid.WidgetDecoration):
     @property
     def scroll_ratio(self):
         return self._rows_max_cached / self._rows_max_displayable
+
 
 class ScrollBar(urwid.WidgetDecoration):
     # TODO: Change scrollbar size and color(?)
@@ -621,9 +624,9 @@ class App(object):
 
     def _stylize_title(self, search_result):
         if search_result["Answers"] == 1:
-            return "%s (1 Answer)" % search_result["Title"]
+            return "%s (1 Answer)" % search_result["TitleTrunc"]
         else:
-            return "%s (%s Answers)" % (search_result["Title"], search_result["Answers"])
+            return "%s (%s Answers)" % (search_result["TitleTrunc"], search_result["Answers"])
 
 
     def _stylize_question(self, title, desc, stats):
@@ -665,9 +668,18 @@ def print_help():
 def get_question_and_answers(url, search_results, idx):
     return search_results[idx]["Title"], urwid.Text("description"), search_results[idx]["index"], [urwid.Text(search_results[idx]["Answer"])]
 
+def remove_quoted_words(error_message):
+    """Removes quoted words from an error message.
+    Example:
+    input: "NameError: name 'a' is not defined"
+    output: "NameError: name is not defined"
+    """
+    return re.sub(r"'.*?'\s", "", error_message)
 
 def main():
     programming_language = get_language(sys.argv[1].lower())
+
+    print(programming_language)
 
     if programming_language == '': # Unknown language
             print("\n%s%s%s" % (RED, "Sorry, resolver doesn't support this file type.\n", END))
@@ -678,27 +690,42 @@ def main():
 
     output, error = execute([programming_language] + file_path)
 
+    # print(error)
+
     error_info = inspect_error(error, programming_language)
 
-    query, err_hint = handle_error(error_info)
+    const_query = None
 
-    # error_message = parse_error(error, programming_language)
+    # print(error_info)
+    if programming_language == "python3":
+        const_query, err_hint = handle_error(error_info)
+    elif programming_language == "ruby":
+        const_query, err_hint = handle_error_ruby(error_info)
+        print(err_hint)
+    elif programming_language == "node.js":
+        const_query, err_hint = handle_error(error_info)
+        print(err_hint)
+    
 
-    # query = "%s %s" % (programming_language, error_info["type"])
+    error_message = error_info["message"]
 
-    search_results = search_query(query, True)
+    error_query = remove_quoted_words(error_message)
 
+    print(error_message)
+
+    raw_query = "%s %s" % (programming_language, error_message)
+    
+    search_results = search_query([const_query, raw_query], error_info)
 
     answers = [result["Answer"] for result in search_results]
 
-    print(answers[0])
+    summarized_answer = get_summarised_answer(answers)
 
-    # summarized_answer = get_summarised_answer(answers)
-
-    # print(summarized_answer)
+    print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",
+        "TitleTrunc": "title 1",
         #"Body": result.find_all("div", class_="excerpt")[0].text,
         #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
         "Answers": 1,
@@ -707,6 +734,7 @@ def main():
 
     search_results.append({
         "Title": "question number 2",
+        "TitleTrunc": "title 1",
         #"Body": result.find_all("div", class_="excerpt")[0].text,
         #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
         "Answers": 1,

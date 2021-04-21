@@ -63,7 +63,7 @@ def summarize(answer) :
 
 def get_summarised_answer(answers):
 
-    intermediate_answer = summarize(answers[1])
+    intermediate_answer = summarize(answers)
 
 
     model = T5ForConditionalGeneration.from_pretrained('t5-small')

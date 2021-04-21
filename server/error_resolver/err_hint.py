@@ -26,47 +26,48 @@ def handle_error(error_info: dict) -> tuple:
     error_type = error_info["type"]
     error_message = error_info["message"]
     error_line = error_info["line"]
+    programming_lang = error_info["prog_lang"]
 
     print("*" * 40)
     print(error_type)
 
     if error_type == "SyntaxError":
         err_hint = handle_syntax_error_locally(error_message, error_line, error_type)
-        query = handle_syntax_error(error_message)
+        query = handle_syntax_error(error_message, programming_lang)
 
     elif error_type == "TabError":
-        query = handle_tab_error(error_message)
+        query = handle_tab_error(error_message, programming_lang)
 
     elif error_type == "IndentationError":
-        query = handle_indentation_error(error_message)
+        query = handle_indentation_error(error_message, programming_lang)
 
     elif error_type == "IndexError":
         err_hint = handle_index_error_locally(error_message, error_line)
-        query = handle_index_error(error_message)
+        query = handle_index_error(error_message, programming_lang)
 
     elif error_type == "ModuleNotFoundError":
         err_hint = handle_module_error_locally(error_message)
-        query = handle_module_not_found_error(error_message)
+        query = handle_module_not_found_error(error_message, programming_lang)
 
     elif error_type == "TypeError":
-        query = handle_type_error(error_message)
+        query = handle_type_error(error_message, programming_lang)
 
     elif error_type == "KeyError":
         err_hint = handle_key_error_locally(error_message, error_info["offending_line"])
-        query = handle_key_error(error_message)
+        query = handle_key_error(error_message, programming_lang)
 
     elif error_type == "AttributeError":
-        query = handle_attr_error(error_message)
+        query = handle_attr_error(error_message, programming_lang)
 
     elif error_type == "NameError":
         err_hint = handle_name_error_locally(error_message)
-        query = handle_name_error(error_message)
+        query = handle_name_error(error_message, programming_lang)
 
     elif error_type == "ZeroDivisionError":
         err_hint = handle_zero_division_error_locally(error_line)
-        query = handle_zero_division_error(error_message)
+        query = handle_zero_division_error(error_message, programming_lang)
     else:
-        query = url_for_error(error_message)  # default query
+        query = url_for_error(error_message, programming_lang)  # default query
 
     print(err_hint)
 
@@ -84,22 +85,22 @@ def handle_syntax_error_locally(error_message: str, error_line: int, err_type) -
 
     return answer
 
-def handle_syntax_error(error_message: str) -> Union[str, None]:
+def handle_syntax_error(error_message: str, programming_lang: str) -> Union[str, None]:
     """Process a SyntaxError """
 
     # if a generic SyntaxError happens
     # it's quite tricky to catch the right offending line
-    if error_message == "SyntaxError: invalid syntax":
-        return None
-    else:
-        error = slugify(error_message, separator="+")
-        return url_for_error(error)
+    # if error_message == "SyntaxError: invalid syntax":
+    #     return None
+    # else:
+    error = slugify(error_message, separator="+")
+    return url_for_error(error, programming_lang)
 
-def handle_key_error(error_message: str) -> str:
+def handle_key_error(error_message: str, programming_lang) -> str:
     """ Directly asks Stackoverflow for similar errors. """
 
     error = slugify(error_message, separator="+")
-    return url_for_error(error)
+    return url_for_error(error, programming_lang)
 
 def handle_key_error_locally(error_message: str, offending_line: str) -> str:
     """When KeyError is handled locally we remind the user that the problematic
@@ -125,7 +126,7 @@ def handle_key_error_locally(error_message: str, offending_line: str) -> str:
 
     return hint
 
-def handle_name_error(error_message: str) -> str:
+def handle_name_error(error_message: str, programming_lang: str) -> str:
     """Process an NameError by removing the variable name.
     By doing this the default error can be search without interference
     of the variable name, which does not add to the problem.
@@ -136,7 +137,7 @@ def handle_name_error(error_message: str) -> str:
     output:
         "NameError: name is not defined"
     """
-    return url_for_error(remove_quoted_words(error_message))
+    return url_for_error(remove_quoted_words(error_message), programming_lang)
 
 
 def handle_name_error_locally(error_message: str) -> str:
@@ -147,12 +148,12 @@ def handle_name_error_locally(error_message: str) -> str:
     hint = HINT_MESSAGES["NameError"].replace("<missing_name>", missing_name)
     return hint
 
-def handle_module_not_found_error(error_message: str) -> str:
+def handle_module_not_found_error(error_message: str, programming_lang: str) -> str:
     """Handling ModuleNoutFoundError is quite simple as most of well known packages
     already have questions on ModuleNotFoundError solved at stackoverflow"""
 
     message = error_message.replace("ModuleNotFoundError", EMPTY_STRING)
-    return url_for_error(message)
+    return url_for_error(message, programming_lang)
 
 def handle_module_error_locally(error_message: str) -> str:
     """Ask if the user has passed a valid module name or
@@ -162,12 +163,12 @@ def handle_module_error_locally(error_message: str) -> str:
     hint = HINT_MESSAGES["ModuleNotFoundError"].replace("<missing_module>", missing_module)
     return hint
 
-def handle_index_error(message: str) -> str:
+def handle_index_error(message: str, programming_lang: str) -> str:
     """Process an IndexError."""
 
     message = slugify(message, separator="+")
 
-    return url_for_error(message)
+    return url_for_error(message, programming_lang)
 
 def handle_index_error_locally(error_message: str, error_line: int) -> str:
     """Process an IndexError locally."""
@@ -185,11 +186,27 @@ def handle_index_error_locally(error_message: str, error_line: int) -> str:
 
     return hint
 
-def handle_zero_division_error(error_message: str) -> str:
+def handle_type_error(error_message: str, programming_lang: str) -> str:
+    """Process an TypeError."""
+
+    hint1 = "the first argument must be callable"
+    hint2 = "not all arguments converted during string formatting"
+    if hint1 in error_message:
+        message = "must have first callable argument"
+    elif hint2 in error_message:
+        message = remove_exception_from_error_message(error_message)
+    else:
+        return url_for_error(error_message, programming_lang)
+
+    message = slugify(message, separator="+")
+
+    return url_for_error(message, programming_lang)
+
+def handle_zero_division_error(error_message: str, programming_lang: str) -> str:
     """Process an ZeroDivisionError"""
 
     message = remove_exception_from_error_message(error_message)
-    return url_for_error(message)
+    return url_for_error(message, programming_lang)
 
 def handle_zero_division_error_locally(error_line: int) -> str:
     """Process an ZeroDivisionError"""
@@ -204,22 +221,29 @@ def set_pagesize(query: str, pagesize: int) -> str:
     return query + f"&pagesize={pagesize}"
 
 
-def get_query_params(error_message: str) -> str:
+def get_query_params(error_message: str, programming_lang: str) -> str:
     """Prepares the query to include necessary filters and meet URL format."""
 
     error_message_slug = slugify(error_message, separator="+")
     order = "&order=desc"
     sort = "&sort=relevance"
-    python_tagged = "&tagged=python"
+
+    if programming_lang == "python3":
+        programming_lang = "python"
+    elif programming_lang == "node":
+        programming_lang = "node.js"
+    
+    python_tagged = f"&tagged={programming_lang}"
+    
     intitle = f"&intitle={error_message_slug}"
 
     return order + sort + python_tagged + intitle
 
 
-def url_for_error(error_message: str) -> str:
+def url_for_error(error_message: str, programming_lang) -> str:
     """Build a valid search url."""
 
-    return SEARCH_URL + get_query_params(error_message)
+    return SEARCH_URL + get_query_params(error_message, programming_lang)
 
 def get_quoted_words(error_message: str) -> List[str]:
     """Extract words surrounded by single quotes.

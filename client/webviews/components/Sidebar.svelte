@@ -9,7 +9,6 @@
         const question1 = document.getElementById("question1");
         const question2 = document.getElementById("question2");
         const question3 = document.getElementById("question3");
-        const question4 = document.getElementById("question4");
 
         const loaders = document.getElementsByClassName("loader");
         var loader = null;
@@ -32,7 +31,6 @@
         question1.innerText = '';
         question2.innerText = '';
         question3.innerText = '';
-        question4.innerText = '';
 
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "hidden"; 
@@ -43,9 +41,7 @@
         }
         
         questionTitles[0].style.visibility = "hidden";
-        questionTitles[1].style.visibility = "hidden";
-
-    
+        questionTitles[1].style.visibility = "hidden";    
 
         fullQuestion.innerText = '';
         fullAnswer.innerText = '';
@@ -84,12 +80,23 @@
 
         arrayOfQuestions = parsedJSON.Questions;
 
+        while (arrayOfQuestions.length < 3) {
+            arrayOfQuestions.push({
+                Answer: "NULL",
+                Answers: 0,
+                Title: "NULL",
+                TitleTrunc: "NULL",
+                URL: "didn't get",
+                index: arrayOfQuestions.length()
+            })
+        }
+
+
         console.log(arrayOfQuestions);
 
-        question1.innerText = arrayOfQuestions[0].Title + "...";
-        question2.innerText = arrayOfQuestions[1].Title + "...";
-        question3.innerText = arrayOfQuestions[2].Title + "...";
-        question4.innerText = arrayOfQuestions[3].Title + "...";
+        question1.innerText = arrayOfQuestions[0].TitleTrunc + "...";
+        question2.innerText = arrayOfQuestions[1].TitleTrunc + "...";
+        question3.innerText = arrayOfQuestions[2].TitleTrunc + "...";
 
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "visible"; 
@@ -123,12 +130,12 @@
     }
 </script>
 <style>
-  #Options{
+  /* #Options{
       display: none;
   }
   #Result{
     display: none;
-  }
+  } */
 
   hr.dotted {
     border-top: 0.5px dotted var(--vscode-foreground);
@@ -204,14 +211,14 @@
     }
 </style>
 <input class="searchQuery" id="myInput"/>
-<div for="topQ" id = "Result">Top Search Results:</div>
+<!-- <div for="topQ" id = "Result">Top Search Results:</div> -->
 
-<select id="Options">
+<!-- <select id="Options">
     
     <option>Option1</option>
 
     
-</select>
+</select> -->
 <button id="myBtn" class="btn" on:click ={fetchFromServer}>
     Search
 </button>
@@ -228,10 +235,7 @@
 <button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(2)}><span>Question 2</span></button>
 <hr class="dotted" style="visibility:hidden">
 <p id="question3"></p>
-<button class="viewButton"  style="visibility:hidden" on:click={() => printFullQuestion(3)}><span>Question 3</span></button>
-<hr class="dotted" style="visibility:hidden">
-<p id="question4"></p>
-<button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(4)}><span>Question 4</span></button>
+<button class="viewButton" style="visibility:hidden"  on:click={() => printFullQuestion(3)}><span>Question 3</span></button>
 <hr class="dotted" style="visibility:hidden">
 <br>
 <h3 style="visibility:hidden">QUESTION:</h3>
@@ -240,4 +244,3 @@
 <h3 style="visibility:hidden">ANSWER:</h3>
 <div style="visibility:hidden" id="fullAnswer">
 </div>
-

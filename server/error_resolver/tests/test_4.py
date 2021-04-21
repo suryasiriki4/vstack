@@ -1,3 +1,3 @@
-import seka
+import kivy
 
 print("hello world")
