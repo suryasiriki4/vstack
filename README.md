@@ -32,7 +32,7 @@ virtualenv venv      # else if you use virtualenv
 source venv/bin/activate
 
 # install packages required to run the tool
-* pip3 install /* to install all the packages required in server*/
+* pipevn install /* to install all the packages required in server*/
 
 * npm install /* to install all packages required in client*/
 ``` 
