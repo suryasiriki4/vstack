@@ -673,7 +673,7 @@ def print_help():
 
 
 def get_question_and_answers(url, search_results, idx):
-    return search_results[idx]["Title"], urwid.Text("description"), search_results[idx]["index"], [urwid.Text(search_results[idx]["Answer"])]
+    return search_results[idx]["Title"], urwid.Text(""), search_results[idx]["index"], [urwid.Text(search_results[idx]["Answer"])]
 
 def remove_quoted_words(error_message):
     """Removes quoted words from an error message.
@@ -717,14 +717,12 @@ def main():
     elif programming_language == "ruby":
         const_query, err_hint = handle_error_ruby(error_info)
         print(err_hint)
-    elif programming_language == "node.js":
+    elif programming_language == "node":
         const_query, err_hint = handle_error(error_info)
-        print(err_hint)
     
 
     error_message = error_info["message"]
     error_query = remove_quoted_words(error_message)
-    print(error_message)
 
     raw_query = "%s %s" % (programming_language, error_message)
     
@@ -733,6 +731,11 @@ def main():
     # generating the summary using get_summarised_answer form sumy.py in summariser
     answers = [result["Answer"] for result in search_results]
     summarized_answer = get_summarised_answer(answers)
+    
+    # outputing the summarised answer
+    print('\n')
+    print('SUMMARY OF ANSWER FROM SO:')
+    print('\n')
     print(summarized_answer)
 
     search_results.append({

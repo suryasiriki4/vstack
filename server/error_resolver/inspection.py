@@ -162,7 +162,6 @@ def inspect_error(error, programming_language):
     """
 
     err_msg = get_error_message(error, programming_language)
-    print(err_msg)
     err_typ = get_error_type(err_msg, programming_language)
     err_line = get_error_line(error, programming_language)    
     err_file_name = get_file_name(error, programming_language)
