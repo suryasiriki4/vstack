@@ -1,9 +1,11 @@
+"""
+this module is to serve the json of questions and answers obtained by from tool.py to the side panel of vscode frontend
+"""
+
 import sys
 import json
 from flask import Flask, render_template, request, redirect, Response
 from flask_cors import CORS, cross_origin
-
-from storage import QUESTIONS
 
 from tool.tool import search_query
 

@@ -1,17 +1,24 @@
+"""
+showing the question and answer panel using gui with tkinter.
+"""
+
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox
 import sys
-from tool import fun
+from .tool.tool import search_query
 
 ques = []
 answers = []
 
 def search():
-
+    """
+    1. it gets the search query in ui
+    2. calls the search_query function in tool.py and return the answer.
+    """
     search_data = ent.get()
 
-    answersStore = fun(search_data)
+    answersStore = search_query(search_data)
     print("1\n")
     # delete current data
     ent.set(" ")
@@ -57,13 +64,19 @@ def view(root, selected_tuple, ques, answers):
         text.insert(0.0, "QUESTION : \n" + ques[selected_tuple[0]] + "\n")
         text.insert(END, 39 * "*" + "\nANSER : \n" + answers[selected_tuple[0]])
 
-
+"""
+disigning the UI window
+"""
 root = Tk()
 root.title("TOOL")
 root.geometry("340x550")
 root.configure(bg="white")
 
 ent = StringVar()
+
+"""
+binding the text inside the UI window with the functions that call tool.py
+"""
 
 search_entry = Entry(root, width=30, font=("arial", 12),
                      bd=2, relief=RIDGE, textvariable=ent)
@@ -95,4 +108,5 @@ parts_list.place(x=15, y=150, height=100, width=320)
 text = ScrolledText(root, font=("times", 10), bd=4, relief=SUNKEN, wrap=WORD)
 text.place(x=15, y=250, height=300, width=320)
 
+# initializing the UI
 root.mainloop()

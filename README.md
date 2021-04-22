@@ -8,19 +8,32 @@ A software tool which improves the human computer interaction by solving develop
 * Generating more readable errors, by summarizing the error message and shortly summarized solution from stack overflow.
 
 ## Images of Side Panel for accessing Stack Oveflow
+### Release 1:
+![Alt text](./images/release_1.gif?raw=true "Side Panel in vscode extension")
 
-![Alt text](./images/img1.png?raw=true "Searching Query in Stackoverflow")
+### Release 2:
+![Alt text](./images/release_21.gif?raw=true "Giving readable, summarized error messages")
 
-![Alt text](./images/img2.png?raw=true "Loaded questions and answers")
+![Alt text](./images/release_22.gif?raw=true "stackoverflow solutions for the errors")
 
-## packages to install:
+### Setup script :
+```console
+# clone the repository your development environment
+git clone https://github.com/suryasiriki4/team09_tool.git
 
-* python3 -m pip install googlesearch-python
+# cd into the project directory
+cd team09_tool/
 
-* pip3 install html2text
+# create a virtual environment to install packages isolatedly
+python3 -m venv venv # if you use venv
+virtualenv venv      # else if you use virtualenv
 
-* python3 -c import nltk; nltk.download('punkt')
+# activate the virtual env
+source venv/bin/activate
 
-* python3 -m pip install numpy
+# install packages required to run the tool
+* pip3 install /* to install all the packages required in server*/
 
+* npm install /* to install all packages required in client*/
+``` 
 

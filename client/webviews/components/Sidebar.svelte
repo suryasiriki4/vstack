@@ -1,16 +1,23 @@
+<!-- 
+    This module contains handles all the html, css and js
+    of the side panel:
+ -->
+
 <script>
 
+    // final array of results from the backend
     let arrayOfQuestions;
 
     async function fetchFromServer() {
 
         // declarations
-
         const question1 = document.getElementById("question1");
         const question2 = document.getElementById("question2");
         const question3 = document.getElementById("question3");
 
         const loaders = document.getElementsByClassName("loader");
+
+        
         var loader = null;
         if (loaders.length > 0 ) {
             loader = loaders[0];
@@ -27,11 +34,11 @@
 
 
         // cleaning the panel for the new results
-
         question1.innerText = '';
         question2.innerText = '';
         question3.innerText = '';
 
+        // initally hiding the buttons and lines in the panel
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "hidden"; 
         }
@@ -48,14 +55,12 @@
 
         fullAnswer.style.visibility = "hidden";
 
-
-        console.log("button is clicked");
-
         const searchJson = JSON.stringify(
         {
         "search" : document.getElementsByClassName('searchQuery')[0].value
         });
-
+        
+        // making the loader component visible
         if (loader) {
             loader.style.visibility = "visible";
         }
@@ -65,21 +70,22 @@
             body: searchJson,
             headers: {
                 'Content-Type': 'application/json'
-                // 'Content-Type': 'application/x-www-form-urlencoded',
             },
         })
         .then(res => res.json());
 
         console.log(response);
 
+        // removing the loader component when the results are fetched
         if (loader) {
             loader.remove();
         }
 
+        // getting the array of results from the response received from backend
         var parsedJSON = response;
-
         arrayOfQuestions = parsedJSON.Questions;
 
+        // making sure that the number of results received are 3 by adding dummy results
         while (arrayOfQuestions.length < 3) {
             arrayOfQuestions.push({
                 Answer: "NULL",
@@ -91,26 +97,21 @@
             })
         }
 
-
-        console.log(arrayOfQuestions);
-
+        // adding the titles of questions from stackoverflow to text components
         question1.innerText = arrayOfQuestions[0].TitleTrunc + "...";
         question2.innerText = arrayOfQuestions[1].TitleTrunc + "...";
         question3.innerText = arrayOfQuestions[2].TitleTrunc + "...";
 
+        // making the buttons and lines visible after results are fetched
         for (var i = 0; i < viewButtons.length; ++i) {
             viewButtons[i].style.visibility = "visible"; 
         }
-
         for (var i = 0; i < lines.length; ++i) {
             lines[i].style.visibility = "visible";
         }
 
-
+        // removing the text in the search box.
         document.getElementsByClassName('searchQuery')[0].value = '';
-
-        // document.getElementById("Result").style.display = "box";
-        // document.getElementById("Options").style.dispaly = "box";
     }
 
     //printing full question and answer at the end
@@ -130,17 +131,12 @@
     }
 </script>
 <style>
-  /* #Options{
-      display: none;
-  }
-  #Result{
-    display: none;
-  } */
-
+  /* styling the line dividers */
   hr.dotted {
     border-top: 0.5px dotted var(--vscode-foreground);
   }
 
+   /* styling the view quetion buttons */
   .viewButton {
     border-radius: 4px;
     background-color: var(--vscode-button-background);
@@ -154,14 +150,12 @@
     cursor: pointer;
     margin: 0.1px;
     }
-
     .viewButton span {
         cursor: pointer;
         display: inline-block;
         position: relative;
         transition: 0.5s;
     }
-
     .viewButton span:after {
     content: '\00bb';
     position: absolute;
@@ -170,16 +164,15 @@
     right: -20px;
     transition: 0.5s;
     }
-
     .viewButton:hover span {
     padding-right: 25px;
     }
-
     .viewButton:hover span:after {
     opacity: 1;
     right: 0;
     }
 
+    /* styling the loader */
     .loader {
     border: 5px solid var(--vscode-foreground); /* Light grey */
     border-top: 5px solid var(--vscode-button-background); /* Blue */
@@ -189,19 +182,18 @@
     height: 30px;
     animation: spin 2s linear infinite;
     }
-
     .loader-container {
         display: flex;
         justify-content: center;
         align-items: center;
         margin-top: 20px;
     }
-
     @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
     }
 
+    /* styling the full answer to be displayed */
     div#fullAnswer {
         background-color: var(--vscode-foreground);
         color: var(--vscode-editor-background);
@@ -210,24 +202,19 @@
         overflow-y: scroll;
     }
 </style>
+
+<!-- search box and search button -->
 <input class="searchQuery" id="myInput"/>
-<!-- <div for="topQ" id = "Result">Top Search Results:</div> -->
-
-<!-- <select id="Options">
-    
-    <option>Option1</option>
-
-    
-</select> -->
 <button id="myBtn" class="btn" on:click ={fetchFromServer}>
     Search
 </button>
 
+<!-- loader component -->
 <div class="loader-container">
     <div class="loader" style="visibility:hidden"></div>
 </div>
 
-
+<!-- 3 questions to be displayed in the side panel -->
 <p id="question1"></p>
 <button class="viewButton" style="visibility:hidden" on:click={() => printFullQuestion(1)}><span>Question 1</span></button>
 <hr class="dotted" style="visibility:hidden">
@@ -237,7 +224,10 @@
 <p id="question3"></p>
 <button class="viewButton" style="visibility:hidden"  on:click={() => printFullQuestion(3)}><span>Question 3</span></button>
 <hr class="dotted" style="visibility:hidden">
+
 <br>
+
+<!-- diplaying entire question and answer when the button is clicked -->
 <h3 style="visibility:hidden">QUESTION:</h3>
 <p id="fullQuestion"></p>
 <br>

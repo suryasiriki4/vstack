@@ -1,3 +1,11 @@
+"""
+This module contains the UI and main for:
+1. displaying the questions and answers for a error from stackoverflow..
+2. displaying local_error hint.
+3. summarizing the answers from stackoverflow.
+"""
+
+
 import sys
 import os
 import re
@@ -18,7 +26,7 @@ from error_resolver.ruby_err_hint import handle_error_ruby
 
 from tool.tool import search_query
 
-# from summariser.sumy import get_summarised_answer
+from summariser.sumy import get_summarised_answer
 
 
 # ASCII codes of colors
@@ -46,7 +54,6 @@ SCROLLBAR_RIGHT = "right"
 
 
 # getting the language from file path
-
 def get_language(file_path):
     """Returns the language a file is written in."""
     if file_path.endswith(".py"):
@@ -519,7 +526,6 @@ class ScrollBar(urwid.WidgetDecoration):
 ##########################################################################
 # SELCTABLE MODULE #
 ##########################################################################
-##################################################################################
 class SelectableText(urwid.Text):
     def selectable(self):
         return True
@@ -638,9 +644,8 @@ class App(object):
         return [new_title, desc, new_stats]
 
 ##################################################################################
-
 ## Helper Functions ##
-
+##################################################################################
 
 def confirm(question):
     """Prompts a given question and handles user input."""
@@ -680,21 +685,28 @@ def remove_quoted_words(error_message):
 
 
 def main():
+    """
+    The resolver does the following things:
+    1. first it identifies the programming language of the file.
+    2. it executs the programme and gets the ouput and error.
+    3. It gets the summary of error from the inspect_error in inspector.py.
+    4. then it gets the local error_hint and diplays, from the handle_error in err_hint.
+    5. getting the questios and answers from search_query in tool.py
+    6. summarizing the answers from stackoverflow and displaying.
+    """
     programming_language = get_language(sys.argv[1].lower())
-
     print(programming_language)
 
     if programming_language == '': # Unknown language
             print("\n%s%s%s" % (RED, "Sorry, resolver doesn't support this file type.\n", END))
             return      
 
-
+    #it executs the programme and gets the ouput and error.
     file_path = sys.argv[1:]
-
     output, error = execute([programming_language] + file_path)
-
     # print(error)
 
+    #It gets the summary of error from the inspect_error in inspector.py.
     error_info = inspect_error(error, programming_language)
 
     const_query = None
@@ -711,39 +723,26 @@ def main():
     
 
     error_message = error_info["message"]
-
     error_query = remove_quoted_words(error_message)
-
     print(error_message)
 
     raw_query = "%s %s" % (programming_language, error_message)
     
     search_results = search_query([const_query, raw_query], error_info)
 
+    # generating the summary using get_summarised_answer form sumy.py in summariser
     answers = [result["Answer"] for result in search_results]
-
-    # summarized_answer = get_summarised_answer(answers)
-
-    # print(summarized_answer)
+    summarized_answer = get_summarised_answer(answers)
+    print(summarized_answer)
 
     search_results.append({
         "Title": "question number 1",
         "TitleTrunc": "title 1",
-        #"Body": result.find_all("div", class_="excerpt")[0].text,
-        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
         "Answers": 1,
         "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
     })
 
-    search_results.append({
-        "Title": "question number 2",
-        "TitleTrunc": "title 1",
-        #"Body": result.find_all("div", class_="excerpt")[0].text,
-        #"Votes": int(result.find_all("span", class_="vote-count-post ")[0].find_all("strong")[0].text),
-        "Answers": 1,
-        "URL": "https://stackoverflow.com/questions/36788688/merge-sort-python-3/36788919"
-    })
-
+    # displaying the questions and answers from stackoverflow
     if confirm("\nDiplay Stack Overflow Results") :
         App(search_results)
 

@@ -1,3 +1,9 @@
+"""
+this module handles the code errors of ruby programming language:
+1. It gives the query to be used for stackoveflow api.
+2. It also gives the local hints for that specific error which changes dynamically.
+"""
+
 import re
 
 from typing import List, Union
@@ -5,7 +11,7 @@ from argparse import Namespace
 
 from slugify import slugify
 
-from .err_utils import HINT_MESSAGES, SEARCH_URL
+from .err_utils import ERR_HINT_MESSAGES, SEARCH_URL
 
 from .err_utils import (
     SINGLE_QUOTE_CHAR,
@@ -34,7 +40,7 @@ def handle_name_error_locally(error_message: str) -> str:
     accidentally forget to define a variable or misspelled its name."""
 
     missing_name = get_quoted_words(error_message)[0]
-    hint = HINT_MESSAGES["NameError"].replace("<missing_name>", missing_name)
+    hint = ERR_HINT_MESSAGES["NameError"].replace("<missing_name>", missing_name)
     return hint
 
 def handle_name_error(error_message: str) -> str:

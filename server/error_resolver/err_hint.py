@@ -1,11 +1,15 @@
-"""Contains all the logic that handles code errors."""
+"""
+this module handles the code errors:
+1. It gives the query to be used for stackoveflow api.
+2. It also gives the local hints for that specific error which changes dynamically.
+"""
 import re
 from typing import List, Union
 from argparse import Namespace
 
 from slugify import slugify
 
-from .err_utils import HINT_MESSAGES, SEARCH_URL
+from .err_utils import ERR_HINT_MESSAGES, SEARCH_URL
 
 from .err_utils import (
     SINGLE_QUOTE_CHAR,
@@ -14,11 +18,10 @@ from .err_utils import (
 )
 
 def handle_error(error_info: dict) -> tuple:
-    """Process the incoming error as needed and outputs three possible answer.
+    """Process the incoming error_info: dict as needed and outputs three possible answer.
     output:
     query: an URL containing an stackoverflow query about the error.
-    err_hint: A possible answer for the error produced locally.
-    TODO: pydoc_answer: A possible answer extracted from the builtin help.
+    err_hint: A possible answer for the error produced locally
     """
 
     pydoc_answer = None
@@ -79,9 +82,9 @@ def handle_syntax_error_locally(error_message: str, error_line: int, err_type) -
     answer = None
     
     if err_type == "ReferenceError":
-        answer = HINT_MESSAGES["SyntaxErrorJavaScript"].replace("<line>", str(error_line))
+        answer = ERR_HINT_MESSAGES["SyntaxErrorJavaScript"].replace("<line>", str(error_line))
     else:
-        answer = HINT_MESSAGES["SyntaxError"].replace("<line>", str(error_line))        
+        answer = ERR_HINT_MESSAGES["SyntaxError"].replace("<line>", str(error_line))        
 
     return answer
 
@@ -145,7 +148,7 @@ def handle_name_error_locally(error_message: str) -> str:
     accidentally forget to define a variable or misspelled its name."""
 
     missing_name = get_quoted_words(error_message)[0]
-    hint = HINT_MESSAGES["NameError"].replace("<missing_name>", missing_name)
+    hint = ERR_HINT_MESSAGES["NameError"].replace("<missing_name>", missing_name)
     return hint
 
 def handle_module_not_found_error(error_message: str, programming_lang: str) -> str:
@@ -160,7 +163,7 @@ def handle_module_error_locally(error_message: str) -> str:
     if it's installable though pip"""
 
     missing_module = get_quoted_words(error_message)[0]
-    hint = HINT_MESSAGES["ModuleNotFoundError"].replace("<missing_module>", missing_module)
+    hint = ERR_HINT_MESSAGES["ModuleNotFoundError"].replace("<missing_module>", missing_module)
     return hint
 
 def handle_index_error(message: str, programming_lang: str) -> str:
@@ -181,7 +184,7 @@ def handle_index_error_locally(error_message: str, error_line: int) -> str:
     elif "range object" in error_message:
         sequence = "range object"
 
-    hint = HINT_MESSAGES["IndexError"].replace("<sequence>", sequence)
+    hint = ERR_HINT_MESSAGES["IndexError"].replace("<sequence>", sequence)
     hint = hint.replace("<line>", str(error_line))
 
     return hint
@@ -210,7 +213,7 @@ def handle_zero_division_error(error_message: str, programming_lang: str) -> str
 
 def handle_zero_division_error_locally(error_line: int) -> str:
     """Process an ZeroDivisionError"""
-    hint = HINT_MESSAGES["ZeroDivisionError"].replace("<line>", str(error_line))
+    hint = ERR_HINT_MESSAGES["ZeroDivisionError"].replace("<line>", str(error_line))
     return hint
 
 
@@ -271,7 +274,7 @@ def remove_quoted_words(error_message: str) -> str:
     return re.sub(r"'.*?'\s", EMPTY_STRING, error_message)
 
 def define_hint_for_key_error_locally(target, missing_key, indentifiers):
-    hint = HINT_MESSAGES["KeyError"]
+    hint = ERR_HINT_MESSAGES["KeyError"]
     if target:
         hint = hint.replace(
             "<initial_error>",

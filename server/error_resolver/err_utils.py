@@ -1,3 +1,7 @@
+"""
+This module contains the utilities required by the error handler.
+"""
+
 import sys
 
 # A list of all standard exeptions
@@ -13,7 +17,8 @@ SINGLE_SPACE_CHAR = " "
 EMPTY_STRING = ""
 COMMA_CHAR = ","
 
-HINT_MESSAGES = {
+# local error hints for the error
+ERR_HINT_MESSAGES = {
     "KeyError": (
         "<initial_error>\n\nKeyError exceptions are raised to the user when a key is not found in a dictionary."
         "\nTo solve this error you may want to define a key with value <key> in the dictionary."

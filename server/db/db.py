@@ -1,3 +1,7 @@
+"""
+datbase to store the questions and answers from stackoverflow.
+"""
+
 import sqlite3
 
 class Database:
