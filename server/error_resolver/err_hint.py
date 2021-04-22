@@ -31,10 +31,11 @@ def handle_error(error_info: dict) -> tuple:
     error_line = error_info["line"]
     programming_lang = error_info["prog_lang"]
 
+    print("\nHINTS FROM vstool :\n")
     print("*" * 40)
     print(error_type)
 
-    if error_type == "SyntaxError":
+    if error_type == "SyntaxError" or error_type == " ReferenceError":
         err_hint = handle_syntax_error_locally(error_message, error_line, error_type)
         query = handle_syntax_error(error_message, programming_lang)
 
@@ -81,7 +82,7 @@ def handle_syntax_error_locally(error_message: str, error_line: int, err_type) -
 
     answer = None
     
-    if err_type == "ReferenceError":
+    if err_type == " ReferenceError":
         answer = ERR_HINT_MESSAGES["SyntaxErrorJavaScript"].replace("<line>", str(error_line))
     else:
         answer = ERR_HINT_MESSAGES["SyntaxError"].replace("<line>", str(error_line))        

@@ -79,8 +79,6 @@ def ask_stackoverflow(query):
     if query is None:
         return []
 
-    print(query)
-
     response_json = requests.get(query).json()
 
     items = response_json["items"]
@@ -213,7 +211,6 @@ def search_query(query_list, error_info):
         4- Sort answers by vote count and limit them
         """
 
-        print("1\n")
         # already constructed query which is ready for api call - const_query
         # raw_query is query in plain text
         const_query, raw_query = query_list
@@ -226,7 +223,6 @@ def search_query(query_list, error_info):
         questions = []
         
         if error_info != None:
-                print(const_query)
                 questions = ask_stackoverflow(const_query)
         
         

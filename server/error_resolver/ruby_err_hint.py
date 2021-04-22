@@ -28,6 +28,10 @@ def handle_error_ruby(error_info: dict) -> tuple:
     error_message = error_info["message"]
     error_line = error_info["line"]
 
+    print("\nHINTS FROM vstool :\n")
+    print("*" * 40)
+    print(error_type)
+
     if error_type == "NameError":
         pycee_hint = handle_name_error_locally(error_message)
         query = handle_name_error(error_message)
