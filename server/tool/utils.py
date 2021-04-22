@@ -1,3 +1,7 @@
+"""
+some of the utility links and data structures required in the tool.py
+"""
+
 from collections import namedtuple
 
 BASE_URL = "https://api.stackexchange.com/2.2"

@@ -1,3 +1,5 @@
+"""module for inspecting the error source code and the error log."""
+
 import re
 import sys
 
@@ -11,12 +13,12 @@ def get_error_message(error, programming_language):
 
     input:
     Traceback (most recent call last):
-    File "example_code.py", line 2, in <module>
-        import kivy
-    ModuleNotFoundError: No module named 'kivy'
+    File "sample_code.py", line 2, in <module>
+        import tkinter
+    ModuleNotFoundError: No module named 'tkinter'
 
     output:
-    ModuleNotFoundError: No module named 'kivy'
+    ModuleNotFoundError: No module named 'tkinter'
     """
 
     error_lines = error.splitlines()
@@ -36,7 +38,7 @@ def get_error_type(error_message, programming_language):
     Here's an example:
 
     input:
-        ModuleNotFoundError: No module named 'kivy'
+        ModuleNotFoundError: No module named 'tkinter'
     output:
         'ModuleNotFoundError'
     """
@@ -53,9 +55,9 @@ def get_error_line(error, programming_language):
     input:
 
     Traceback (most recent call last):
-    File "example_code.py", line 2, in <module>
-        import kivy
-    ModuleNotFoundError: No module named 'kivy'
+    File "sample_code.py", line 2, in <module>
+        import tkinter
+    ModuleNotFoundError: No module named 'tkinter'
 
     output:
     2  # <class 'int'>
@@ -91,13 +93,13 @@ def get_file_name(error, programming_language):
     Here's an example:
 
     input:
-    'File "example_code.py", line 1
+    'File "sample_code.py", line 1
         print(
             ^
     SyntaxError: unexpected EOF while parsing'
 
     output:
-    'example_code.py'
+    'sample_code.py'
     """
 
     if programming_language == 'node':
@@ -145,6 +147,19 @@ def get_offending_line(error_line, code):
     return offending_line
 
 def inspect_error(error, programming_language):
+    """ 
+    summarizies all the error information and returns it as a directory for each traceback of error
+    error_info = {
+        "traceback": error,
+        "message": err_msg,
+        "type": err_typ,
+        "line": err_line,
+        "file": err_file_name,
+        "code": code,
+        "offending_line": offending_line,
+        "prog_lang": programming_language,
+    }
+    """
 
     err_msg = get_error_message(error, programming_language)
     print(err_msg)

@@ -1,18 +1,16 @@
+"""
+This module give the summary of the most upvoted answer received from stackoverflow
+"""
+
 import torch
 import os
 import json 
 from transformers import T5Tokenizer, T5Config, T5ForConditionalGeneration
 
-# luhns heuristic method
-
 # we load our file and thus take each sentence indivisually in lowercase.
-def load_common_words() :
-    f = open('./words.txt', 'r')
-    common_words = set()
-    for word in f :
-        common_words.add(word.strip('\n').lower())
-    f.close()
-    return common_words
+from .words import load_common_words
+
+# luhns heuristic method
 
 #  finding the most common words to our document based on their frequency and removing the unwanted stopwords.
 def top_words(answer) :
@@ -61,26 +59,36 @@ def summarize(answer) :
     scores = {}
     for sentence in sentences :
         scores[sentence] = calculate_score(sentence, metric)
-f = open('./answers.txt', 'r')
-splited_answer = f.readlines()
-answer_string = "".join(splited_answer)
+    top_sentences = list(sentences)                             # make a copy
+    top_sentences.sort(key=lambda x: scores[x], reverse=True)   # sort by score
+    top_sentences = top_sentences[:int(len(scores)*0.5)]        # get top 5%
+    top_sentences.sort(key=lambda x: sentences.index(x))        # sort by occurrence       
+    return '. '.join(top_sentences)
 
 
 # final summarization(abstarctive using T5 trannsformers technique)
 def get_summarised_answer(answers):
+    """
+    This function does:
+    1. preparing a model and tokenizer from t5-small parameters.
+    2. summarizing.
+    3. selecting the most summarized answer.
+    """
+
+    answers = [answers[0]]
 
     intermediate_answer = summarize(answers)
 
     # preparing a model and tokenizer from t5-small parameters
+    model = T5ForConditionalGeneration.from_pretrained('t5-small')
     tokenizer = T5Tokenizer.from_pretrained('t5-small')
     device = torch.device('cpu')
     # summarizing
     preprocess_text = intermediate_answer.strip().replace("\n","")
-    t5_prepared_Text = "summarize: "+preprocess_text
+    t5_prepared_Text = "summarize: "+ preprocess_text
 
     tokenized_text = tokenizer.encode(t5_prepared_Text, return_tensors="pt").to(device)
 
-    
     summary_ids = model.generate(tokenized_text,
                                         num_beams=4,
                                         no_repeat_ngram_size=2,
@@ -89,8 +97,6 @@ def get_summarised_answer(answers):
                                         early_stopping=True)
     # take most perfectly summarized one
     final_answer = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-
-    # print (final_answer)
 
     return final_answer
 
