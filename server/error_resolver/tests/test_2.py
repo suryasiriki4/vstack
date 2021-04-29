@@ -3,3 +3,4 @@ print(ages['A'])
 print(ages['B'])
 print(ages['C'])
 print(ages['D'])
+# directory key error

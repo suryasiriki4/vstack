@@ -227,7 +227,7 @@ def search_query(query_list, error_info):
         
         
         if questions == []:
-            print("entering google")
+            print("\nentering google")
             questions = google_questions(raw_query)
 
         answers = get_answers_to_questions(questions)
