@@ -24,15 +24,9 @@ git clone https://github.com/suryasiriki4/team09_tool.git
 # cd into the project directory
 cd team09_tool/
 
-# create a virtual environment to install packages isolatedly
-python3 -m pipenv pipenv # if you use pipenv
-virtualenv pipenv      # else if you use virtualenv
-
-# activate the virtual env
-source pipenv/bin/activate
-
 # install packages required to run the tool
-* pipevn install /* to install all the packages required in server*/
+* pipenv install 
+* pipenv shell   /* to install all the packages required in server*/
 
 * npm install /* to install all packages required in client*/
 ``` 
