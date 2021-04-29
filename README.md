@@ -32,7 +32,8 @@ cd team09_tool/
 ``` 
 
 ### Run script :
+```console
 * python3 server.py  /* in server folder */
 * npm run watch      /* in client folder */
 then press f5 to start dev env in visual studio.
-
+``` 
