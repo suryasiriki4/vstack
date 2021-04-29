@@ -26,8 +26,13 @@ cd team09_tool/
 
 # install packages required to run the tool
 * pipenv install 
-* pipenv shell   /* to install all the packages required in server*/
+* pipenv shell   /* in server folder to install all the packages required in server*/
 
-* npm install /* to install all packages required in client*/
+* npm install /* in client folder to install all packages required in client*/
 ``` 
+
+### Run script :
+* python3 server.py  /* in server folder */
+* npm run watch      /* in client folder */
+then press f5 to start dev env in visual studio.
 
