@@ -26,9 +26,9 @@ cd team09_tool/
 
 # install packages required to run the tool
 * cd server
-* pipenv install /* in server folder to install all the packages required in server*/
+* pipenv install /* in server directory to install all the packages required in server*/
 * cd client
-* npm install /* in client folder to install all packages required in client*/
+* npm install /* in client directory to install all packages required in client*/
 ``` 
 
 ### Run script :
@@ -41,5 +41,6 @@ then press f5 to start dev env in visual studio.
 ``` 
 ```console
 Feature 2:
-* python3 resolver.py ./errror_resolver/tests/test_4.py
+* cd server
+* python3 resolver.py ./errror_resolver/tests/test_4.py   /* in server directory */
 ``` 
