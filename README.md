@@ -25,15 +25,18 @@ git clone https://github.com/suryasiriki4/team09_tool.git
 cd team09_tool/
 
 # install packages required to run the tool
+* cd server
 * pipenv install 
 * pipenv shell   /* in server folder to install all the packages required in server*/
-
+* cd client
 * npm install /* in client folder to install all packages required in client*/
 ``` 
 
 ### Run script :
 ```console
+* cd server
 * python3 server.py  /* in server folder */
+* cd client
 * npm run watch      /* in client folder */
 then press f5 to start dev env in visual studio.
 ``` 
