@@ -10,6 +10,8 @@ sumy = "*"
 html2text = "*"
 googlesearch-python = "*"
 flask = "*"
+flask_cors = "*"
+python-slugify = "*"
 
 [dev-packages]
 
