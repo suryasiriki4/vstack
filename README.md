@@ -26,8 +26,7 @@ cd team09_tool/
 
 # install packages required to run the tool
 * cd server
-* pipenv install 
-* pipenv shell   /* in server folder to install all the packages required in server*/
+* pipenv install /* in server folder to install all the packages required in server*/
 * cd client
 * npm install /* in client folder to install all packages required in client*/
 ``` 
