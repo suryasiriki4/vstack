@@ -12,6 +12,7 @@ googlesearch-python = "*"
 flask = "*"
 flask_cors = "*"
 python-slugify = "*"
+urwid = "*"
 
 [dev-packages]
 
