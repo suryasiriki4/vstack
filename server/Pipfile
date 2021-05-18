@@ -13,6 +13,8 @@ flask = "*"
 flask_cors = "*"
 python-slugify = "*"
 urwid = "*"
+transformers = "*"
+sentencepiece = "*"
 
 [dev-packages]
 
