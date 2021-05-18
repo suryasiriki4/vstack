@@ -42,5 +42,6 @@ then press f5 to start dev env in visual studio.
 ```console
 Feature 2:
 * cd server
+* pipenv install torch
 * python3 resolver.py ./errror_resolver/tests/test_4.py   /* in server directory */
 ``` 
