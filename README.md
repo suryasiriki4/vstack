@@ -3,7 +3,7 @@
 ## ABOUT :
 A software tool which improves the human computer interaction by solving developers routine problem of swtiching to web browser for accessing stackoverflow to search for a query or question and also give the summary of error along with a short summarized solution from stackoverflow after compilation.
 
-[a link](https://youtu.be/-YNVzYT7Az0)
+[VStack Demo Video](https://youtu.be/-YNVzYT7Az0)
 
 ## this vs code extension consists of mainly two features :
 * A side panel for searching any query or issue in stackoverflow and getting the most relevant results.
