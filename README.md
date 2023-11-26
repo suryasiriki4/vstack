@@ -1,7 +1,13 @@
 # VStack
 
 ## ABOUT :
-A software tool which improves the human computer interaction by solving developers routine problem of swtiching to web browser for accessing stackoverflow to search for a query or question and also give the summary of error along with a short summarized solution from stackoverflow after compilation.
+Did you know that an average developer spends 12.5% of his time on "Stack overflow"?
+
+Switching to browser can be a dangerous for developer's productivity.
+
+VStack gives answers to your queries in your IDE. Vstack also gives "Stack overflow" results for errors in your program.
+
+With VStack you don't even have to switch a tab to access "stack overflow".
 
 [VStack Demo Video](https://youtu.be/-YNVzYT7Az0)
 
