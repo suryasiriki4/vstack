@@ -17,12 +17,12 @@ With VStack you don't even have to switch a tab to access "stack overflow".
 
 ## Images of Side Panel for accessing Stack Oveflow
 ### Release 1:
-![Alt text](/images/release_1.gif "Side Panel in vscode extension")
+![alt text](/images/release_1.gif "Side Panel in vscode extension")
 
 ### Release 2:
-![Alt text](/images/release_21.gif "Giving readable, summarized error messages")
+![alt text](/images/release_21.gif "Giving readable, summarized error messages")
 
-![Alt text](/images/release_22.gif "stackoverflow solutions for the errors")
+![alt text](/images/release_22.gif "stackoverflow solutions for the errors")
 
 ### Setup script :
 ```console
