@@ -17,7 +17,7 @@ With VStack you don't even have to switch a tab to access "stack overflow".
 
 ## Images of Side Panel for accessing Stack Oveflow
 ### Release 1:
-![alt text](https://github.com/suryasiriki4/vstack/blob/main/images/release_1.gif?raw=true "Side Panel in vscode extension")
+![alt text](https://github.com/suryasiriki4/vstack/blob/main/images/release_1.gif?raw=true)
 
 ### Release 2:
 ![alt text](/images/release_21.gif "Giving readable, summarized error messages")
