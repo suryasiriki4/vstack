@@ -17,12 +17,12 @@ With VStack you don't even have to switch a tab to access "stack overflow".
 
 ## Images of Side Panel for accessing Stack Oveflow
 ### Release 1:
-![alt text](https://github.com/suryasiriki4/vstack/blob/main/images/release_1.gif?raw=true)
+![alt text](https://github.com/suryasiriki4/vstack/assets/44111344/66a170eb-9d86-4ebb-a2fb-017fcacaefab "vscode extension")
 
 ### Release 2:
-![alt text](/images/release_21.gif "Giving readable, summarized error messages")
+![alt text](https://github.com/suryasiriki4/vstack/assets/44111344/1b92b0e1-5587-4f77-85d2-f541fafb6564 "Giving readable, summarized error messages")
 
-![alt text](/images/release_22.gif "stackoverflow solutions for the errors")
+![alt text](https://github.com/suryasiriki4/vstack/assets/44111344/5ebac64a-8da4-4ec4-aff0-55fc621c759a "stackoverflow solutions for the errors")
 
 ### Setup script :
 ```console
